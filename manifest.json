@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "ThreatKey",
+  "version": "2.2.1",
+  "description": "キーボードでテキスト選択＆脅威インテリジェンス即時検索（NVD / RansomLook / Malpedia / VirusTotal）",
+  "permissions": ["tabs", "clipboardWrite", "activeTab", "scripting", "contextMenus"],
+  "action": {
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    },
+    "default_title": "選択タブのURLをコピー"
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "commands": {
+    "activate": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+F"
+      },
+      "description": "KeySelect を起動"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["attack-data.json"],
+      "matches": ["http://*/*", "https://*/*", "file:///*"]
+    }
+  ],
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*", "file:///*"],
+      "js": ["tk-utils.js", "tk-highlighter.js", "content.js", "cve-highlight.js", "attack-highlight.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
