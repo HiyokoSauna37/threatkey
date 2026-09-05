@@ -1,3 +1,5 @@
 *.zip
 .DS_Store
 Thumbs.db
+.attack-cache/
+__pycache__/

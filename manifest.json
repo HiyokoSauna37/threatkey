@@ -1,9 +1,22 @@
 {
   "manifest_version": 3,
   "name": "ThreatKey",
-  "version": "2.2.1",
-  "description": "キーボードでテキスト選択＆脅威インテリジェンス即時検索（NVD / RansomLook / Malpedia / VirusTotal）",
-  "permissions": ["tabs", "clipboardWrite", "activeTab", "scripting", "contextMenus"],
+  "version": "3.0.0",
+  "description": "キーボードでテキスト選択＆脅威インテリジェンス即時参照（NVD / CISA KEV / EPSS / MITRE ATT&CK / RansomLook / Malpedia / VirusTotal）",
+  "minimum_chrome_version": "105",
+  "permissions": [
+    "tabs",
+    "clipboardWrite",
+    "activeTab",
+    "scripting",
+    "contextMenus",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://services.nvd.nist.gov/*",
+    "https://api.first.org/*",
+    "https://www.cisa.gov/*"
+  ],
   "action": {
     "default_icon": {
       "16": "icons/icon-16.png",
@@ -17,6 +30,7 @@
     "48": "icons/icon-48.png",
     "128": "icons/icon-128.png"
   },
+  "options_page": "options.html",
   "commands": {
     "activate": {
       "suggested_key": {

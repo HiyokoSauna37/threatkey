@@ -6,7 +6,7 @@
 
 <h1 align="center">ThreatKey</h1>
 
-<p align="center">キーボードでのテキスト選択（KeySelect）と脅威インテリジェンス即時検索を組み合わせたChrome拡張機能。</p>
+<p align="center">キーボードでのテキスト選択（KeySelect）と脅威インテリジェンス即時参照を組み合わせたChrome拡張機能。</p>
 
 ---
 
@@ -18,10 +18,11 @@
 |------|---------|
 | KeySelect（キーボードでテキスト選択） | `Ctrl+Shift+F` |
 | 脅威インテリジェンス検索 | テキスト選択 + `Ctrl+Shift+Z/L/E/V` |
-| CVE 自動ハイライト + NVDツールチップ | 自動（ホバーで詳細表示） |
+| CVE 自動ハイライト + NVD / CISA KEV / EPSS ツールチップ | 自動（ホバーで詳細表示） |
 | MITRE ATT&CK 自動ハイライト + ツールチップ | 自動（ホバーで詳細表示） |
 | 選択タブのURL一括コピー | ツールバーアイコンをクリック |
-| Base64 エンコード/デコード | テキスト選択して右クリック |
+| Base64 エンコード/デコード、Defang/Refang | テキスト選択して右クリック |
+| 設定（ON/OFF・NVD APIキー・キャッシュ） | 拡張機能のオプションページ |
 
 ## KeySelect（テキスト選択）
 
@@ -61,32 +62,75 @@
 
 | キー | サービス | 用途 |
 |------|---------|------|
-| `Ctrl+Shift+Z` | NVD | CVE番号の詳細（選択テキストから CVE-XXXX-XXXX を抽出） |
+| `Ctrl+Shift+Z` | NVD | CVE番号の詳細（選択テキストから `CVE-XXXX-XXXX` を抽出、無ければキーワード検索） |
 | `Ctrl+Shift+L` | RansomLook | ランサムウェアグループ名 |
 | `Ctrl+Shift+E` | Malpedia | 脅威アクター名 |
 | `Ctrl+Shift+V` | VirusTotal | ハッシュ / IOC |
 
-※ これらのキーは content script 内で固定（`chrome://extensions/shortcuts` では変更不可）。
+※ これらのキーは content script 内で固定（`chrome://extensions/shortcuts` では変更不可）。入力欄にフォーカスがある間は横取りしないため、`Ctrl+Shift+V`（書式なし貼り付け）は従来どおり動作する。
 
 ## 自動ハイライト
 
-- **CVE**: ページ内の `CVE-XXXX-XXXX` を自動ハイライト（同じCVEは同じ色）。ホバーすると NVD API から CVSS スコア・深刻度・説明をツールチップ表示。
-- **ATT&CK**: `T1234` / `T1234.001` 形式のテクニックIDを自動ハイライト。ホバーで名称・戦術・説明・MITRE URLを表示（データは同梱の `attack-data.json`、[MITRE ATT&CK](https://attack.mitre.org/)由来・ネットワーク通信不要）。
+ハイライトは [CSS Custom Highlight API](https://developer.mozilla.org/docs/Web/API/CSS_Custom_Highlight_API) で描画している。ブラウザがテキストと一緒に塗るため、位置合わせ用のオーバーレイ要素が不要で、スクロール時の再計算コストがゼロになる。
+
+- **CVE**: ページ内の `CVE-XXXX-XXXX` を自動ハイライト（同じCVEは同じ色）。ホバーで以下を表示する。
+  - NVD API の CVSS スコアと深刻度（v4.0 を優先し、v3.1 → v3.0 → v2 の順にフォールバック）、ベクター文字列、公開日
+  - [CISA KEV](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) 収載時は **KEV** バッジ（ランサムウェア利用が確認されている場合は区別して表示）
+  - [FIRST](https://www.first.org/epss/) の **EPSS**（悪用可能性スコア）
+- **ATT&CK**: `T1234` / `T1234.001` 形式のテクニックIDを同梱の `attack-data.json` から解決してハイライト（通信不要）。ホバーで名称・全戦術・マトリクス・プラットフォーム・説明を表示。廃止（deprecated）・統合（revoked）済みのIDは打ち消し線で描画し、MITRE が後継を定義していればツールチップに移行先を示す（`T0803 → T1691.001 Command Message`）。古いレポートを読むときに効く。
+
+取得結果は `chrome.storage.local` にキャッシュし（成功7日 / エラー10分）、NVD へのリクエストは順序付きキューで間隔を空けて送るため、CVEが大量にあるページでもレート制限に当たらない。
+
+## オプション
+
+`chrome://extensions/` → ThreatKey → 「拡張機能のオプション」で以下を設定できる。
+
+- CVE / ATT&CK ハイライトの ON / OFF
+- 廃止・統合済み ATT&CK ID を対象に含めるか
+- **NVD API キー**（任意）: 未設定でも動くが、設定すると 30 秒あたり 5 → 50 リクエストに緩和される（[取得はこちら](https://nvd.nist.gov/developers/request-an-api-key)）
+- 同梱している ATT&CK のバージョン確認と、CVE / KEV キャッシュの削除
 
 ## ファイル構成
 
 | ファイル | 役割 |
 |---------|------|
 | `manifest.json` | MV3 マニフェスト |
-| `background.js` | サービスワーカー（ショートカット・ルックアップ・NVD API・URLコピー・Base64コンテキストメニュー） |
+| `background.js` | サービスワーカー（ショートカット・ルックアップ・NVD/EPSS/KEV 取得とキャッシュ・レート制限・URLコピー・コンテキストメニュー） |
 | `content.js` | KeySelect 本体 + ルックアップショートカット |
-| `tk-utils.js` | 共有ユーティリティ（テキストノード走査・トースト等） |
-| `tk-highlighter.js` | CVE / ATT&CK 共用のハイライトエンジン |
-| `cve-highlight.js` | CVE ハイライト設定 + NVD ツールチップ |
-| `attack-highlight.js` | ATT&CK ハイライト設定 + ツールチップ |
-| `attack-data.json` | ATT&CK テクニックデータ（`{ID: [名称, 戦術, 説明]}`） |
-| `styles.css` | 全UIスタイル |
+| `tk-utils.js` | 共有ユーティリティ（テキストノード走査・設定・トースト） |
+| `tk-highlighter.js` | CVE / ATT&CK 共用のスキャン・描画・ホバーエンジン |
+| `cve-highlight.js` | CVE の色割り当て + NVD/KEV/EPSS ツールチップ |
+| `attack-highlight.js` | ATT&CK 解決 + ツールチップ（データは遅延ロード） |
+| `attack-data.json` | ATT&CK テクニックデータ（下記参照） |
+| `options.html` / `options.js` | 設定ページ |
+| `styles.css` | 全UIスタイル（`::highlight()` ルール含む） |
+| `build_attack_data.py` | MITRE の STIX バンドルから `attack-data.json` を再生成 |
 | `generate_icons.py` | アイコン生成スクリプト |
+
+## ATT&CK データ
+
+`attack-data.json` は公式の [attack-stix-data](https://github.com/mitre-attack/attack-stix-data) から生成しており、現在は **ATT&CK v19.2**（Enterprise / Mobile / ICS の 1140 テクニック、うち現行 918）を収録している。
+
+```json
+{
+  "meta": { "attack_version": "19.2", "generated": "2026-09-05", ... },
+  "techniques": {
+    "T1055": ["Process Injection", "Stealth, Privilege Escalation", "Adversaries may inject...",
+              "Linux, macOS, Windows", "E"]
+  }
+}
+```
+
+各行は `[名称, 戦術, 説明, プラットフォーム, マトリクス, ステータス?, 移行先?]`。現行テクニックでは `ステータス`（`1` 廃止 / `2` 統合）と `移行先` を省略しているので、`row[5] || 0` として読む。
+
+更新方法:
+
+```sh
+python build_attack_data.py            # 各マトリクスの最新版を取得
+python build_attack_data.py --version 19.2
+```
+
+STIX バンドルは `.attack-cache/`（git 管理外）にダウンロードされ、`attack-data.json` が書き換わる。なお v19 で Enterprise の戦術構成が変わり、`Defense Evasion` が `Stealth` と `Defense Impairment` に分割された。データ更新でツールチップの戦術名が変わることがある。
 
 ## インストール
 
@@ -96,6 +140,8 @@
 4. このリポジトリのフォルダを選択
 
 または [Releases](../../releases) からパッケージ済みのzipを取得し、展開したフォルダを同様に読み込んでください。
+
+**Chrome 105 以降**が必要（CSS Custom Highlight API を使用）。
 
 ## ショートカットキーの変更
 

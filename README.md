@@ -18,10 +18,11 @@ ThreatKey combines **KeySelect** — selecting on-page text without touching the
 |---|---|
 | KeySelect (keyboard text selection) | `Ctrl+Shift+F` |
 | Threat-intel lookup on selected text | Select text + `Ctrl+Shift+Z/L/E/V` |
-| Automatic CVE highlighting + NVD tooltip | Automatic (hover for details) |
-| Automatic MITRE ATT&CK highlighting + tooltip | Automatic (hover for details) |
+| CVE highlighting + NVD / CISA KEV / EPSS tooltip | Automatic (hover for details) |
+| MITRE ATT&CK highlighting + tooltip | Automatic (hover for details) |
 | Copy URLs of all highlighted tabs | Click the toolbar icon |
-| Base64 encode/decode | Right-click a selection |
+| Base64 encode/decode, defang/refang | Right-click a selection |
+| Settings (toggles, NVD API key, cache) | Extension options page |
 
 ## KeySelect (keyboard text selection)
 
@@ -61,32 +62,75 @@ Select text on a page and press a shortcut to open the matching service's search
 
 | Key | Service | Used for |
 |---|---|---|
-| `Ctrl+Shift+Z` | NVD | CVE details (extracts `CVE-XXXX-XXXX` from the selection) |
+| `Ctrl+Shift+Z` | NVD | CVE details (`CVE-XXXX-XXXX` from the selection; keyword search otherwise) |
 | `Ctrl+Shift+L` | RansomLook | Ransomware group name |
 | `Ctrl+Shift+E` | Malpedia | Threat actor name |
 | `Ctrl+Shift+V` | VirusTotal | Hash / IOC |
 
-> These are fixed in the content script and can't be rebound from `chrome://extensions/shortcuts`.
+> These are fixed in the content script and can't be rebound from `chrome://extensions/shortcuts`. They are ignored while the caret is in a text field, so `Ctrl+Shift+V` still pastes as plain text where you'd expect it to.
 
 ## Automatic highlighting
 
-- **CVE** — `CVE-XXXX-XXXX` patterns on the page are highlighted automatically (the same CVE always gets the same color). Hover to fetch CVSS score, severity, and description from the NVD API.
-- **ATT&CK** — technique IDs in `T1234` / `T1234.001` form are highlighted automatically. Hover to see the name, tactic, description, and a link to MITRE, using the bundled `attack-data.json` (derived from [MITRE ATT&CK](https://attack.mitre.org/), no network request needed).
+Highlighting uses the [CSS Custom Highlight API](https://developer.mozilla.org/docs/Web/API/CSS_Custom_Highlight_API), so the browser paints matches together with the text — there are no overlay elements to keep aligned, and scrolling costs nothing.
+
+- **CVE** — `CVE-XXXX-XXXX` patterns are highlighted automatically, and the same CVE always gets the same colour on a page. Hovering shows:
+  - CVSS score and severity from the NVD API (v4.0 metrics preferred, falling back to v3.1 → v3.0 → v2), plus the vector string and publication date
+  - a **KEV** badge when the CVE is in the [CISA Known Exploited Vulnerabilities](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) catalog, flagged separately when it is linked to ransomware campaigns
+  - the **EPSS** exploitation probability from [FIRST](https://www.first.org/epss/)
+- **ATT&CK** — technique IDs in `T1234` / `T1234.001` form are highlighted from the bundled `attack-data.json` (no network request). Hovering shows the name, every tactic, matrix, platforms and description. Deprecated and revoked IDs are struck through and, where MITRE defines a replacement, the tooltip points at it (`T0803 → T1691.001 Command Message`), which is what you want when reading older reports.
+
+Responses are cached in `chrome.storage.local` (7 days for a hit, 10 minutes for an error) and NVD requests are queued and spaced out so a page full of CVEs cannot trip the public rate limit.
+
+## Options
+
+Open the extension's options page (`chrome://extensions/` → ThreatKey → *Extension options*) to:
+
+- turn CVE or ATT&CK highlighting on and off
+- include or exclude deprecated / revoked ATT&CK IDs
+- set an **NVD API key** — optional, but it raises the limit from 5 to 50 requests per 30 seconds ([request one here](https://nvd.nist.gov/developers/request-an-api-key))
+- see which ATT&CK version is bundled and clear the CVE / KEV caches
 
 ## Files
 
 | File | Role |
 |---|---|
 | `manifest.json` | MV3 manifest |
-| `background.js` | Service worker (shortcuts, lookups, NVD API, URL copy, Base64 context menu) |
+| `background.js` | Service worker (shortcuts, lookups, NVD/EPSS/KEV fetching + cache + rate limit, URL copy, context menu) |
 | `content.js` | KeySelect itself + lookup shortcuts |
-| `tk-utils.js` | Shared utilities (text node walking, toasts, etc.) |
-| `tk-highlighter.js` | Shared highlight engine used by CVE / ATT&CK |
-| `cve-highlight.js` | CVE highlight config + NVD tooltip |
-| `attack-highlight.js` | ATT&CK highlight config + tooltip |
-| `attack-data.json` | ATT&CK technique data (`{id: [name, tactic, description]}`) |
-| `styles.css` | All UI styling |
+| `tk-utils.js` | Shared utilities (text node walking, settings, toasts) |
+| `tk-highlighter.js` | Shared scan / paint / hover engine used by CVE and ATT&CK |
+| `cve-highlight.js` | CVE colour buckets + NVD/KEV/EPSS tooltip |
+| `attack-highlight.js` | ATT&CK lookup + tooltip, lazily loading the dataset |
+| `attack-data.json` | ATT&CK technique data (see below) |
+| `options.html` / `options.js` | Settings page |
+| `styles.css` | All UI styling, including the `::highlight()` rules |
+| `build_attack_data.py` | Regenerates `attack-data.json` from MITRE's STIX bundles |
 | `generate_icons.py` | Icon generation script |
+
+## ATT&CK data
+
+`attack-data.json` is generated from the official [attack-stix-data](https://github.com/mitre-attack/attack-stix-data) bundles and currently carries **ATT&CK v19.2** — 1140 techniques (918 current) across Enterprise, Mobile and ICS.
+
+```json
+{
+  "meta": { "attack_version": "19.2", "generated": "2026-09-05", ... },
+  "techniques": {
+    "T1055": ["Process Injection", "Stealth, Privilege Escalation", "Adversaries may inject...",
+              "Linux, macOS, Windows", "E"]
+  }
+}
+```
+
+Each row is `[name, tactics, description, platforms, matrix, status?, supersededBy?]`. `status` (`1` deprecated, `2` revoked) and `supersededBy` are omitted for current techniques, so read them as `row[5] || 0`.
+
+To refresh it:
+
+```sh
+python build_attack_data.py            # latest version of every matrix
+python build_attack_data.py --version 19.2
+```
+
+The script downloads the STIX bundles into `.attack-cache/` (git-ignored) and rewrites `attack-data.json`. Note that v19 reorganised Enterprise's tactics — `Defense Evasion` was split into `Stealth` and `Defense Impairment` — so a data refresh can change the tactic labels shown in tooltips.
 
 ## Install
 
@@ -96,6 +140,8 @@ Select text on a page and press a shortcut to open the matching service's search
 4. Select this repository's folder.
 
 Or grab the packaged zip from [Releases](../../releases) and load the extracted folder the same way.
+
+Requires **Chrome 105+** (CSS Custom Highlight API).
 
 ## Rebinding the activation shortcut
 
