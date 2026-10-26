@@ -107,6 +107,12 @@
 | `build_attack_data.py` | MITRE の STIX バンドルから `attack-data.json` を再生成 |
 | `generate_icons.py` | アイコン生成スクリプト |
 
+### アイコン
+
+`icons/threatkey.svg` が編集用の原稿です。開いたレーダーの輪と鍵を一つの形にし、背景を透明にしています。拡張機能には 16・32・48・128px の PNG を使用し、32px 版で高密度ディスプレイのツールバー表示にも対応します。
+
+再生成するには [librsvg](https://gitlab.gnome.org/GNOME/librsvg) をインストール（macOS では `brew install librsvg`）して、`python3 generate_icons.py` を実行してください。`icons/preview.html` を開くと、明るい背景・暗い背景で各サイズを実寸確認できます。
+
 ## ATT&CK データ
 
 `attack-data.json` は公式の [attack-stix-data](https://github.com/mitre-attack/attack-stix-data) から生成しており、現在は **ATT&CK v19.2**（Enterprise / Mobile / ICS の 1140 テクニック、うち現行 918）を収録している。
