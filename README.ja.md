@@ -1,7 +1,7 @@
 <p align="right"><a href="README.md">English</a> | <b>日本語</b></p>
 
 <p align="center">
-  <img src="icons/icon-128.png" width="96" alt="ThreatKey logo">
+  <img src="icons/threatkey.svg" width="96" height="96" alt="ThreatKey — radar and key logo">
 </p>
 
 <h1 align="center">ThreatKey</h1>
@@ -11,6 +11,10 @@
 ---
 
 アドバイザリやインシデントレポート、脅威分析記事をマウス無しで速く読むための拡張機能です。ページ内テキストの選択をキーボードだけで行うKeySelectに加え、選択テキストからの脅威インテリジェンス検索、CVE/MITRE ATT&CKの自動ハイライトを提供します。
+
+## 最新の更新 — 2026年10月26日
+
+アイコンを、透明背景の「開いたレーダー＋鍵」のマークに変更しました。ツールバーと拡張機能の管理画面向けに 16・32・48・128px を用意しています。インストール済みの場合は、[ファイルの更新と ThreatKey の再読み込み](#インストール済みの場合の更新)で新しいアイコンが反映されます。
 
 ## 機能一覧
 
@@ -105,13 +109,16 @@
 | `options.html` / `options.js` | 設定ページ |
 | `styles.css` | 全UIスタイル（`::highlight()` ルール含む） |
 | `build_attack_data.py` | MITRE の STIX バンドルから `attack-data.json` を再生成 |
-| `generate_icons.py` | アイコン生成スクリプト |
+| `icons/threatkey.svg` | この README にも使用する編集用ロゴ原稿 |
+| `icons/icon-*.png` | 拡張機能用のアイコン（16・32・48・128px） |
+| `icons/preview.html` | 明暗背景でのアイコン実寸プレビュー |
+| `generate_icons.py` | SVG 原稿から PNG アイコンを生成 |
 
 ### アイコン
 
 `icons/threatkey.svg` が編集用の原稿です。開いたレーダーの輪と鍵を一つの形にし、背景を透明にしています。拡張機能には 16・32・48・128px の PNG を使用し、32px 版で高密度ディスプレイのツールバー表示にも対応します。
 
-再生成するには [librsvg](https://gitlab.gnome.org/GNOME/librsvg) をインストール（macOS では `brew install librsvg`）して、`python3 generate_icons.py` を実行してください。`icons/preview.html` を開くと、明るい背景・暗い背景で各サイズを実寸確認できます。
+再生成するには [librsvg](https://gitlab.gnome.org/GNOME/librsvg) をインストール（macOS では `brew install librsvg`）して、`python3 generate_icons.py` を実行してください。`icons/preview.html` をローカルで開くと、明るい背景・暗い背景で各サイズを実寸確認できます。Python と librsvg が必要なのは画像を再生成するときだけです。拡張機能のインストール・更新には同梱の PNG をそのまま使用できます。
 
 ## ATT&CK データ
 
@@ -140,14 +147,22 @@ STIX バンドルは `.attack-cache/`（git 管理外）にダウンロードさ
 
 ## インストール
 
-1. `chrome://extensions/` を開く
-2. 「デベロッパーモード」をON
-3. 「パッケージ化されていない拡張機能を読み込む」
-4. このリポジトリのフォルダを選択
+1. [最新 main の ZIP](https://github.com/HiyokoSauna37/threatkey/archive/refs/heads/main.zip) をダウンロードして展開するか、このリポジトリを clone する
+2. `chrome://extensions/` を開き、「デベロッパーモード」を ON にする
+3. 「パッケージ化されていない拡張機能を読み込む」をクリックする
+4. 展開・clone したフォルダのうち、`manifest.json` があるフォルダを選択する
 
-または [Releases](../../releases) からパッケージ済みのzipを取得し、展開したフォルダを同様に読み込んでください。
+[Releases](https://github.com/HiyokoSauna37/threatkey/releases) にはバージョンごとのパッケージを掲載しています。リリースの ZIP はそのタグ時点の内容で、以降の `main` の変更は自動では入りません。最新のアイコン・機能を使う場合は、上記の main の ZIP を取得してください。
 
-**Chrome 105 以降**が必要（CSS Custom Highlight API を使用）。
+**Chrome 105 以降**が必要です（CSS Custom Highlight API を使用）。Windows・macOS ともにビルドは不要です。
+
+### インストール済みの場合の更新
+
+1. Chrome に読み込ませているフォルダを更新します。Git の `main` を使っている場合は、そのフォルダで `git pull --ff-only` を実行します。ZIP で入れた場合は最新 main の ZIP を展開し、読み込み済みフォルダの拡張機能ファイルを置き換えます。
+2. `chrome://extensions/` を開き、ThreatKey のカードにある再読み込みボタンをクリックします。
+3. ThreatKey を使う既存の Web ページも再読み込みして、content script を更新します。
+
+ツールバーに新アイコンが見当たらない場合は、Chrome の拡張機能メニューから ThreatKey を固定してください。パッケージ化されていない拡張機能はローカルのファイルを使うため、GitHub の更新だけではインストール済みのコピーには反映されません。
 
 ## ショートカットキーの変更
 

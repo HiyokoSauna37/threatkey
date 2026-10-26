@@ -1,7 +1,7 @@
 <p align="right"><b>English</b> | <a href="README.ja.md">日本語</a></p>
 
 <p align="center">
-  <img src="icons/icon-128.png" width="96" alt="ThreatKey logo">
+  <img src="icons/threatkey.svg" width="96" height="96" alt="ThreatKey — radar and key logo">
 </p>
 
 <h1 align="center">ThreatKey</h1>
@@ -11,6 +11,10 @@
 ---
 
 ThreatKey combines **KeySelect** — selecting on-page text without touching the mouse — with one-key lookups against common threat-intelligence services, plus automatic highlighting of CVE IDs and MITRE ATT&CK technique IDs as you read. It's built for reading advisories, incident reports, and threat write-ups faster.
+
+## Latest update — October 26, 2026
+
+The icon now combines an open radar ring and a key on a transparent background, with 16, 32, 48 and 128px assets for the toolbar and extension manager. Existing installations need to [update the extension files and reload ThreatKey](#updating-an-existing-installation) to show the new icon.
 
 ## Features
 
@@ -105,13 +109,16 @@ Open the extension's options page (`chrome://extensions/` → ThreatKey → *Ext
 | `options.html` / `options.js` | Settings page |
 | `styles.css` | All UI styling, including the `::highlight()` rules |
 | `build_attack_data.py` | Regenerates `attack-data.json` from MITRE's STIX bundles |
-| `generate_icons.py` | Icon generation script |
+| `icons/threatkey.svg` | Editable logo used by this README |
+| `icons/icon-*.png` | Generated extension icons (16, 32, 48 and 128px) |
+| `icons/preview.html` | Icon sizes on light and dark backgrounds |
+| `generate_icons.py` | Renders PNG icons from the SVG master |
 
 ### Icon artwork
 
 `icons/threatkey.svg` is the editable master: an open radar ring flowing into a key, on a transparent background. The extension uses the generated 16, 32, 48 and 128px PNGs; the 32px asset keeps the toolbar crisp on high-density displays.
 
-To regenerate them, install [librsvg](https://gitlab.gnome.org/GNOME/librsvg) (`brew install librsvg` on macOS), then run `python3 generate_icons.py`. Open `icons/preview.html` to inspect the PNGs at their actual sizes on light and dark backgrounds.
+To regenerate them, install [librsvg](https://gitlab.gnome.org/GNOME/librsvg) (`brew install librsvg` on macOS), then run `python3 generate_icons.py`. Open `icons/preview.html` locally to inspect the PNGs at their actual sizes on light and dark backgrounds. Python and librsvg are only needed to regenerate artwork; installing or updating the extension uses the included PNGs.
 
 ## ATT&CK data
 
@@ -140,14 +147,22 @@ The script downloads the STIX bundles into `.attack-cache/` (git-ignored) and re
 
 ## Install
 
-1. Open `chrome://extensions/`.
-2. Turn on **Developer mode**.
+1. Download the [latest main ZIP](https://github.com/HiyokoSauna37/threatkey/archive/refs/heads/main.zip) and extract it, or clone this repository.
+2. Open `chrome://extensions/` and turn on **Developer mode**.
 3. Click **Load unpacked**.
-4. Select this repository's folder.
+4. Select the extracted or cloned folder containing `manifest.json`.
 
-Or grab the packaged zip from [Releases](../../releases) and load the extracted folder the same way.
+[Releases](https://github.com/HiyokoSauna37/threatkey/releases) provides versioned packages. A release ZIP contains the files from its tag and does not automatically include later changes on `main`; use the main ZIP above for the latest icon and features.
 
-Requires **Chrome 105+** (CSS Custom Highlight API).
+Requires **Chrome 105+** (CSS Custom Highlight API). No build step is needed on Windows or macOS.
+
+### Updating an existing installation
+
+1. Update the folder already loaded into Chrome. For a Git checkout of `main`, run `git pull --ff-only` in that folder. For a ZIP installation, extract the latest main ZIP and replace the extension files in the loaded folder.
+2. Open `chrome://extensions/` and click **Reload** on ThreatKey's card.
+3. Reload any open web pages where you use ThreatKey so their content scripts also update.
+
+If the new icon is not visible in the toolbar, open Chrome's extensions menu and pin ThreatKey. The unpacked extension uses your local files; updating GitHub alone does not update an installed copy.
 
 ## Rebinding the activation shortcut
 
