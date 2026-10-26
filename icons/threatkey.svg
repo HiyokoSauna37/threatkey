@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" fill="none">
+  <title>ThreatKey</title>
+  <desc>An open radar ring flows into a key, with a single signal at its centre.</desc>
+  <defs>
+    <linearGradient id="ink" x1="26" y1="20" x2="108" y2="108" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#089BB7"/>
+      <stop offset="1" stop-color="#4263EB"/>
+    </linearGradient>
+  </defs>
+  <path d="M73.213 27.787 A30 30 0 1 0 73.213 70.213 L108 105
+           M86 83 L98 71 M100 97 L112 85"
+        stroke="url(#ink)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="52" cy="49" r="5.5" fill="#089BB7"/>
+</svg>

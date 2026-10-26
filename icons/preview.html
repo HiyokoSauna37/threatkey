@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ThreatKey — icon preview</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 56px 32px;
+      background: #eceeed;
+      color: #202726;
+      font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { max-width: 960px; margin: auto; }
+    header { display: flex; align-items: center; gap: 14px; margin-bottom: 36px; }
+    h1 { margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -1px; }
+    header p { margin: 2px 0 0; color: #66706c; font-size: 12px; }
+    .surfaces { display: grid; grid-template-columns: 1fr 1fr; }
+    .surface { padding: 32px; background: #fff; }
+    .dark { background: #171c24; color: #e9edf1; }
+    h2 { margin: 0; font-size: 11px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; opacity: .55; }
+    .hero { height: 208px; display: grid; place-items: center; }
+    .sizes { display: flex; align-items: flex-end; gap: 30px; min-height: 90px; }
+    figure { display: grid; justify-items: center; gap: 12px; margin: 0; }
+    figcaption { font-size: 11px; opacity: .55; font-variant-numeric: tabular-nums; }
+    .toolbar { display: flex; align-items: center; gap: 16px; margin-top: 30px; padding: 14px 0 0; border-top: 1px solid #e8eae9; }
+    .dark .toolbar { border-color: #303640; }
+    .address { flex: 1; border-radius: 20px; background: #f1f3f4; color: #65716b; padding: 7px 14px; font-size: 11px; }
+    .dark .address { background: #272e38; color: #a9b3c0; }
+    footer { margin-top: 22px; color: #66706c; font-size: 12px; }
+    @media (max-width: 640px) {
+      body { padding: 28px 20px; }
+      .surfaces { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <img src="icon-48.png" width="40" height="40" alt="">
+      <div><h1>ThreatKey</h1><p>Icon study · open radar + key</p></div>
+    </header>
+    <div class="surfaces">
+      <section class="surface" aria-labelledby="light-title">
+        <h2 id="light-title">Light surface</h2>
+        <div class="hero"><img src="icon-128.png" width="128" height="128" alt="ThreatKey icon on white"></div>
+        <div class="sizes">
+          <figure><img src="icon-16.png" width="16" height="16" alt="16 pixel icon"><figcaption>16 px</figcaption></figure>
+          <figure><img src="icon-32.png" width="32" height="32" alt="32 pixel icon"><figcaption>32 px</figcaption></figure>
+          <figure><img src="icon-48.png" width="48" height="48" alt="48 pixel icon"><figcaption>48 px</figcaption></figure>
+        </div>
+        <div class="toolbar" aria-label="Toolbar example">
+          <span class="address">advisory.example / report</span>
+          <img src="icon-16.png" srcset="icon-16.png 1x, icon-32.png 2x" width="16" height="16" alt="ThreatKey toolbar icon">
+        </div>
+      </section>
+      <section class="surface dark" aria-labelledby="dark-title">
+        <h2 id="dark-title">Dark surface</h2>
+        <div class="hero"><img src="icon-128.png" width="128" height="128" alt="ThreatKey icon on charcoal"></div>
+        <div class="sizes">
+          <figure><img src="icon-16.png" width="16" height="16" alt="16 pixel icon"><figcaption>16 px</figcaption></figure>
+          <figure><img src="icon-32.png" width="32" height="32" alt="32 pixel icon"><figcaption>32 px</figcaption></figure>
+          <figure><img src="icon-48.png" width="48" height="48" alt="48 pixel icon"><figcaption>48 px</figcaption></figure>
+        </div>
+        <div class="toolbar" aria-label="Toolbar example">
+          <span class="address">advisory.example / report</span>
+          <img src="icon-16.png" srcset="icon-16.png 1x, icon-32.png 2x" width="16" height="16" alt="ThreatKey toolbar icon">
+        </div>
+      </section>
+    </div>
+    <footer>Transparent artwork. PNGs shown at actual size; the toolbar uses 32 px on high-density displays.</footer>
+  </main>
+</body>
+</html>

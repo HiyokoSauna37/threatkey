@@ -107,6 +107,12 @@ Open the extension's options page (`chrome://extensions/` → ThreatKey → *Ext
 | `build_attack_data.py` | Regenerates `attack-data.json` from MITRE's STIX bundles |
 | `generate_icons.py` | Icon generation script |
 
+### Icon artwork
+
+`icons/threatkey.svg` is the editable master: an open radar ring flowing into a key, on a transparent background. The extension uses the generated 16, 32, 48 and 128px PNGs; the 32px asset keeps the toolbar crisp on high-density displays.
+
+To regenerate them, install [librsvg](https://gitlab.gnome.org/GNOME/librsvg) (`brew install librsvg` on macOS), then run `python3 generate_icons.py`. Open `icons/preview.html` to inspect the PNGs at their actual sizes on light and dark backgrounds.
+
 ## ATT&CK data
 
 `attack-data.json` is generated from the official [attack-stix-data](https://github.com/mitre-attack/attack-stix-data) bundles and currently carries **ATT&CK v19.2** — 1140 techniques (918 current) across Enterprise, Mobile and ICS.
