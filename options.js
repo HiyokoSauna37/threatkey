@@ -2,17 +2,24 @@
 
 const DEFAULTS = {
   cveHighlight: true,
+  cveTranslateJapanese: true,
   attackHighlight: true,
   attackShowRetired: true,
   nvdApiKey: '',
 };
 
-const CHECKBOXES = ['cveHighlight', 'attackHighlight', 'attackShowRetired'];
+const CHECKBOXES = [
+  'cveHighlight',
+  'cveTranslateJapanese',
+  'attackHighlight',
+  'attackShowRetired',
+];
 
 const $ = (id) => document.getElementById(id);
 
 async function load() {
   const settings = await chrome.storage.local.get(DEFAULTS);
+  $('extensionVersion').textContent = 'v' + chrome.runtime.getManifest().version;
   for (const key of CHECKBOXES) $(key).checked = !!settings[key];
   $('nvdApiKey').value = settings.nvdApiKey || '';
 }
@@ -47,6 +54,8 @@ async function showDataStats() {
 
   const all = await chrome.storage.local.get(null);
   $('cacheCount').textContent = Object.keys(all).filter((k) => k.startsWith('cve:')).length + ' 件';
+  $('translationCacheCount').textContent =
+    Object.keys(all).filter((k) => k.startsWith('cve-ja:')).length + ' 件';
   if (all.kev && all.kev.t) {
     const hours = Math.floor((Date.now() - all.kev.t) / 3600000);
     $('kevAge').textContent = Object.keys(all.kev.ids || {}).length + ' 件 / ' + hours + ' 時間前に取得';
@@ -57,7 +66,8 @@ async function showDataStats() {
 
 async function clearCache() {
   const all = await chrome.storage.local.get(null);
-  const keys = Object.keys(all).filter((k) => k.startsWith('cve:') || k === 'kev');
+  const keys = Object.keys(all).filter((k) =>
+    k.startsWith('cve:') || k.startsWith('cve-ja:') || k === 'kev');
   if (keys.length) await chrome.storage.local.remove(keys);
   flash('キャッシュを削除しました');
   showDataStats();

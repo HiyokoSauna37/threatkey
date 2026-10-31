@@ -25,6 +25,7 @@
 
   const SETTING_DEFAULTS = {
     cveHighlight: true,
+    cveTranslateJapanese: true,
     attackHighlight: true,
     attackShowRetired: true,
     nvdApiKey: '',

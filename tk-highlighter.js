@@ -18,6 +18,7 @@
   const SCAN_MAX_WAIT_MS = 1500;  // ...but never starve a busy page
   const WALK_NODE_MAX = 20000;    // text nodes inspected per scan
   const HIT_SLOP_PX = 1;
+  const TOOLTIP_HIDE_DELAY_MS = 450;
 
   const supported =
     typeof CSS !== 'undefined' &&
@@ -36,6 +37,8 @@
     index: new Map(),      // Text node -> [{start, end, id, source}]
     pointer: { x: -1, y: -1 },
     hoverRaf: 0,
+    hideTimer: 0,
+    tooltipPointerDown: false,
     hover: null,           // the entry currently described by a tooltip
   };
 
@@ -51,6 +54,7 @@
    * @param {function(string): number} [config.bucketFor] - id -> bucket index
    * @param {string} config.tooltipId - element id for this source's tooltip
    * @param {number} config.tooltipWidth - fallback width before first layout
+   * @param {function(string[]): void} [config.onIdsChanged] - visible ids after a scan
    * @param {function(string, HTMLElement, function(): boolean)} config.renderTooltip
    * @returns {{start: function(), stop: function(), refresh: function()}}
    */
@@ -63,6 +67,7 @@
       bucketFor: config.bucketFor || (() => 0),
       tooltipId: config.tooltipId,
       tooltipWidth: config.tooltipWidth,
+      onIdsChanged: config.onIdsChanged,
       renderTooltip: config.renderTooltip,
       cssNames: [],
       tooltip: null,
@@ -107,7 +112,8 @@
     engine.listening = true;
 
     document.addEventListener('mousemove', onPointerMove, { passive: true });
-    document.addEventListener('scroll', hideTooltips, { capture: true, passive: true });
+    document.addEventListener('mouseup', onPointerUp, { passive: true });
+    document.addEventListener('scroll', onScroll, { capture: true, passive: true });
     window.addEventListener('resize', hideTooltips, { passive: true });
     document.addEventListener('visibilitychange', onVisibilityChange);
     window.addEventListener('pagehide', teardown);
@@ -129,8 +135,9 @@
     }
     clearTimeout(engine.scanTimer);
     clearTimeout(engine.maxWaitTimer);
+    clearTimeout(engine.hideTimer);
     if (engine.hoverRaf) cancelAnimationFrame(engine.hoverRaf);
-    engine.scanTimer = engine.maxWaitTimer = engine.hoverRaf = 0;
+    engine.scanTimer = engine.maxWaitTimer = engine.hoverRaf = engine.hideTimer = 0;
     engine.listening = false;
   }
 
@@ -182,7 +189,11 @@
     const index = new Map();
     const buckets = new Map();  // css highlight name -> StaticRange[]
     const budget = new Map();   // source -> remaining matches
-    for (const s of active) budget.set(s, s.maxMatches);
+    const ids = new Map();      // source -> Set of ids found in this scan
+    for (const s of active) {
+      budget.set(s, s.maxMatches);
+      ids.set(s, new Set());
+    }
 
     const nodes = window.__tk.walkTextNodes((node) => {
       const text = node.nodeValue;
@@ -212,6 +223,7 @@
           }
           const id = s.normalizeId(m[0]);
           if (!id) continue;
+          ids.get(s).add(id);
 
           const start = m.index;
           const end = start + m[0].length;
@@ -235,6 +247,15 @@
 
     engine.index = index;
     paint(buckets);
+
+    for (const s of active) {
+      if (typeof s.onIdsChanged !== 'function') continue;
+      try {
+        s.onIdsChanged(Array.from(ids.get(s)));
+      } catch (e) {
+        console.warn('[ThreatKey] id callback failed:', e);
+      }
+    }
 
     // Only drop the tooltip when its anchor really left the document; a match
     // can fall out of the index for benign reasons (budget, transient hiding).
@@ -274,16 +295,21 @@
 
   function resolveHover() {
     engine.hoverRaf = 0;
+    if (engine.tooltipPointerDown || pointerInsideVisibleTooltip()) {
+      cancelScheduledHide();
+      return;
+    }
     if (!engine.index.size) {
-      if (engine.hover) hideTooltips();
+      if (engine.hover) scheduleHide();
       return;
     }
 
     const hit = hitTest(engine.pointer.x, engine.pointer.y);
     if (!hit) {
-      if (engine.hover) hideTooltips();
+      if (engine.hover) scheduleHide();
       return;
     }
+    cancelScheduledHide();
     if (engine.hover && engine.hover.id === hit.id && engine.hover.source === hit.source) {
       // Same ID, different occurrence: move the tooltip, keep its content.
       if (engine.hover.entry !== hit.entry) {
@@ -362,6 +388,12 @@
     const el = document.createElement('div');
     el.id = source.tooltipId;
     el.style.display = 'none';
+    el.addEventListener('mouseenter', cancelScheduledHide);
+    el.addEventListener('mouseleave', scheduleHide);
+    el.addEventListener('mousedown', () => {
+      engine.tooltipPointerDown = true;
+      cancelScheduledHide();
+    });
     root.appendChild(el);
     // The tooltip grows when async data lands; keep it anchored.
     if (typeof ResizeObserver === 'function') {
@@ -374,6 +406,7 @@
   }
 
   function showTooltip(hit) {
+    cancelScheduledHide();
     const source = hit.source;
     for (const s of engine.sources) {
       if (s !== source && s.tooltip) s.tooltip.style.display = 'none';
@@ -398,11 +431,70 @@
   }
 
   function hideTooltips() {
+    cancelScheduledHide();
     if (!engine.hover) return;
     engine.hover = null;
+    engine.tooltipPointerDown = false;
     for (const s of engine.sources) {
       if (s.tooltip) s.tooltip.style.display = 'none';
     }
+  }
+
+  function scheduleHide() {
+    if (!engine.hover || engine.tooltipPointerDown || engine.hideTimer) return;
+    engine.hideTimer = setTimeout(() => {
+      engine.hideTimer = 0;
+      if (!engine.tooltipPointerDown && !pointerInsideVisibleTooltip() &&
+          !selectionInsideVisibleTooltip()) hideTooltips();
+    }, TOOLTIP_HIDE_DELAY_MS);
+  }
+
+  function cancelScheduledHide() {
+    clearTimeout(engine.hideTimer);
+    engine.hideTimer = 0;
+  }
+
+  function onPointerUp() {
+    if (!engine.tooltipPointerDown) return;
+    engine.tooltipPointerDown = false;
+    if (selectionInsideVisibleTooltip()) return;
+    if (!pointerInsideVisibleTooltip() && !hitTest(engine.pointer.x, engine.pointer.y)) {
+      scheduleHide();
+    }
+  }
+
+  function onScroll(event) {
+    for (const s of engine.sources) {
+      if (s.tooltip && s.tooltip.contains(event.target)) {
+        cancelScheduledHide();
+        return;
+      }
+    }
+    hideTooltips();
+  }
+
+  function pointerInsideVisibleTooltip() {
+    const x = engine.pointer.x;
+    const y = engine.pointer.y;
+    if (x < 0 || y < 0) return false;
+    for (const s of engine.sources) {
+      const el = s.tooltip;
+      if (!el || el.style.display === 'none') continue;
+      const rect = el.getBoundingClientRect();
+      if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) return true;
+    }
+    return false;
+  }
+
+  function selectionInsideVisibleTooltip() {
+    const selection = window.getSelection && window.getSelection();
+    if (!selection || selection.isCollapsed) return false;
+    for (const s of engine.sources) {
+      const el = s.tooltip;
+      if (!el || el.style.display === 'none') continue;
+      if (el.contains(selection.anchorNode) || el.contains(selection.focusNode)) return true;
+    }
+    return false;
   }
 
   function position(source, rect) {

@@ -4,66 +4,137 @@
   <meta charset="utf-8">
   <title>ThreatKey Options</title>
   <style>
-    :root { color-scheme: dark; }
+    :root {
+      color-scheme: light;
+      --bg: #faf9f5; --bg-2: #f2f0e9; --panel: #fff;
+      --line: #e7e4db; --line-2: #d8d4c8;
+      --ink: #1f1e1d; --ink-2: #5e5c57; --muted: #8e8b82;
+      --accent: #c76b4d; --accent-2: #af573c; --accent-soft: #f7e9e1;
+      --ok: #5b8a5f; --shadow: 0 2px 3px rgba(31,30,29,.025), 0 8px 24px rgba(31,30,29,.055);
+      --sans: ui-rounded, "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Hiragino Sans",
+        "Noto Sans JP", "Yu Gothic UI", system-ui, sans-serif;
+      --mono: "SF Mono", "Cascadia Mono", "Consolas", monospace;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        color-scheme: dark;
+        --bg: #262624; --bg-2: #2e2d2a; --panel: #30302e;
+        --line: #3e3d39; --line-2: #4c4a45;
+        --ink: #eceae3; --ink-2: #b8b5ac; --muted: #9b978e;
+        --accent: #d97757; --accent-2: #e38a6c; --accent-soft: #473730;
+        --shadow: 0 2px 3px rgba(0,0,0,.12), 0 8px 24px rgba(0,0,0,.18);
+      }
+    }
+    * { box-sizing: border-box; }
     body {
-      margin: 0;
-      padding: 28px 24px 40px;
-      background: #14142a;
-      color: #e0e0e0;
-      font: 14px/1.6 -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans JP', sans-serif;
+      margin: 0; background: var(--bg); color: var(--ink);
+      font: 14px/1.7 var(--sans); letter-spacing: .012em; -webkit-font-smoothing: antialiased;
     }
-    main { max-width: 640px; margin: 0 auto; }
-    h1 { font-size: 20px; margin: 0 0 4px; color: #fff; }
-    .sub { color: #8892b0; font-size: 12px; margin: 0 0 24px; }
+    main { max-width: 760px; margin: 0 auto; padding: 38px 24px 54px; }
+    .mast { display: flex; align-items: center; gap: 14px; margin-bottom: 30px; }
+    .brand-mark { width: 46px; height: 46px; flex: none; }
+    .brand-copy { min-width: 0; }
+    .eyebrow { display: block; color: var(--accent); font-size: 9px; font-weight: 700; letter-spacing: .16em; }
+    h1 {
+      margin: 0; color: var(--ink); font: 400 27px/1.05 Georgia, "Times New Roman", serif;
+      letter-spacing: -.045em;
+    }
+    .sub { color: var(--muted); font-size: 12px; margin: 4px 0 0; }
+    .version { margin-left: auto; align-self: flex-start; color: var(--muted); font: 11px/1.4 var(--mono); }
+    .settings-intro { margin: 0 4px 24px; }
+    .settings-intro h2 { margin: 3px 0 5px; font: 600 22px/1.35 var(--sans); letter-spacing: -.025em; color: var(--ink); }
+    .settings-intro p { margin: 0; color: var(--ink-2); font-size: 13px; }
     section {
-      background: #1a1a2e;
-      border: 1px solid #2b2b45;
-      border-radius: 10px;
-      padding: 16px 18px;
-      margin-bottom: 16px;
+      background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+      box-shadow: var(--shadow); padding: 20px 22px; margin-bottom: 14px;
     }
-    h2 {
-      font-size: 12px; text-transform: uppercase; letter-spacing: 0.6px;
-      color: #7986cb; margin: 0 0 12px;
+    section > h2 {
+      font-size: 10px; line-height: 1.3; letter-spacing: .14em;
+      color: var(--accent); margin: 0 0 13px; font-weight: 700;
     }
-    label.row { display: flex; align-items: flex-start; gap: 10px; padding: 7px 0; cursor: pointer; }
-    label.row input { margin-top: 3px; accent-color: #e94560; }
-    .hint { display: block; color: #8892b0; font-size: 12px; }
+    label.row { display: flex; align-items: flex-start; gap: 11px; padding: 8px 0; cursor: pointer; color: var(--ink); }
+    label.row input { width: 17px; height: 17px; flex: none; margin-top: 3px; accent-color: var(--accent); }
+    .hint { display: block; color: var(--muted); font-size: 11.5px; line-height: 1.6; margin-top: 1px; }
     input[type="text"], input[type="password"] {
-      width: 100%; box-sizing: border-box;
-      background: #14142a; border: 1px solid #0f3460; color: #eee;
-      border-radius: 6px; padding: 8px 10px; font: inherit; font-size: 13px;
+      width: 100%; background: var(--panel); border: 1px solid var(--line-2); color: var(--ink);
+      border-radius: 10px; padding: 9px 11px; font: 13px/1.5 var(--sans); outline: none;
+      transition: border-color .12s, box-shadow .12s;
     }
-    input[type="text"]:focus, input[type="password"]:focus { outline: none; border-color: #e94560; }
+    input[type="text"]:focus, input[type="password"]:focus {
+      border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft);
+    }
     button {
-      background: #e94560; color: #fff; border: 0; border-radius: 6px;
-      padding: 8px 16px; font: inherit; font-weight: 600; cursor: pointer;
+      background: #b85e43; color: #fff; border: 1px solid transparent; border-radius: 10px;
+      padding: 9px 17px; font: 700 13px/1.3 var(--sans); cursor: pointer;
+      transition: background .12s, box-shadow .12s, transform .05s;
     }
-    button.ghost { background: #2b2b45; color: #c5cae9; }
-    button:hover { filter: brightness(1.12); }
-    .actions { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
-    .status { color: #66bb6a; font-size: 12px; min-height: 18px; }
-    dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0; font-size: 13px; }
-    dt { color: #8892b0; }
-    dd { margin: 0; font-family: 'Consolas', 'Monaco', monospace; }
-    code {
-      background: #14142a; border: 1px solid #2b2b45; border-radius: 4px;
-      padding: 1px 6px; font-size: 12px;
+    button:hover { background: #a45138; box-shadow: 0 2px 10px rgba(184,94,67,.22); }
+    button:active { transform: translateY(1px); }
+    button.ghost { background: var(--panel); border-color: var(--line-2); color: var(--ink-2); font-weight: 600; }
+    button.ghost:hover { background: var(--bg-2); color: var(--ink); box-shadow: none; }
+    button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .actions { display: flex; align-items: center; gap: 12px; margin-top: 15px; }
+    .status { color: var(--ok); font-size: 12px; min-height: 18px; }
+    dl {
+      display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; margin: 0;
+      padding: 12px 14px; border-radius: 11px; background: var(--bg-2); font-size: 12.5px;
     }
-    a { color: #7986cb; }
+    dt { color: var(--muted); }
+    dd { margin: 0; color: var(--ink-2); font-family: var(--mono); }
+    code { background: var(--bg-2); border-radius: 5px; padding: 1px 5px; color: var(--ink-2); font: 11px var(--mono); }
+    .severity-key {
+      display: flex; flex-wrap: wrap; gap: 7px 14px; margin: 4px 0 6px 28px;
+      padding: 9px 12px; border-radius: 10px; background: var(--bg-2);
+    }
+    .severity-key span { margin: 0; padding-bottom: 1px; border-bottom: 4px solid var(--sev); color: var(--ink-2); }
+    a { color: var(--accent-2); }
+    @media (max-width: 620px) {
+      main { padding: 24px 14px 40px; }
+      section { padding: 18px 16px; }
+      .settings-intro { margin-inline: 2px; }
+      dl { grid-template-columns: 1fr; gap: 1px; }
+      dd { margin-bottom: 6px; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
   </style>
 </head>
 <body>
   <main>
-    <h1>ThreatKey</h1>
-    <p class="sub">キーボードでテキスト選択 &amp; 脅威インテリジェンス即時参照</p>
+    <header class="mast">
+      <img class="brand-mark" src="icons/icon-48.png" alt="">
+      <div class="brand-copy">
+        <span class="eyebrow">THREAT INTELLIGENCE, AT HAND</span>
+        <h1>threatkey</h1>
+        <p class="sub">キーボードで選び、脅威情報をその場で読む。</p>
+      </div>
+      <span class="version" id="extensionVersion"></span>
+    </header>
+
+    <div class="settings-intro">
+      <span class="eyebrow">MAKE IT YOURS</span>
+      <h2>脅威情報を、読む前から。</h2>
+      <p>CVEの見分け方、日本語表示、ATT&amp;CKの対象範囲をここで整えます。</p>
+    </div>
 
     <section>
       <h2>ハイライト</h2>
       <label class="row">
         <input type="checkbox" id="cveHighlight">
         <span>CVE をハイライトする
-          <span class="hint">ホバーで NVD / CISA KEV / EPSS を表示</span></span>
+          <span class="hint">背景色でCVEを区別し、太い下線でCVSS severityを表示。ホバーで NVD / CISA KEV / EPSS を表示</span></span>
+      </label>
+      <div class="severity-key hint" aria-label="severityの色">
+        <span style="--sev:#c0493d">緊急</span>
+        <span style="--sev:#d97757">高</span>
+        <span style="--sev:#a8761f">中</span>
+        <span style="--sev:#5b8a5f">低</span>
+        <span style="--sev:#79766e">なし</span>
+        <span style="--sev:#b8b3a6">取得中 / 不明</span>
+      </div>
+      <label class="row">
+        <input type="checkbox" id="cveTranslateJapanese">
+        <span>CVE の説明文を日本語で表示する
+          <span class="hint">Chrome内蔵の端末内翻訳を使用。説明文は外部の翻訳APIへ送信しない（Chrome 138以降）</span></span>
       </label>
       <label class="row">
         <input type="checkbox" id="attackHighlight">
@@ -95,6 +166,7 @@
         <dt>ATT&amp;CK</dt><dd id="attackVersion">…</dd>
         <dt>テクニック数</dt><dd id="attackCount">…</dd>
         <dt>CVE キャッシュ</dt><dd id="cacheCount">…</dd>
+        <dt>日本語翻訳キャッシュ</dt><dd id="translationCacheCount">…</dd>
         <dt>KEV カタログ</dt><dd id="kevAge">…</dd>
       </dl>
       <div class="actions">

@@ -120,19 +120,78 @@
   color: #04120a;
 }
 
-/* ===== CVE highlights (12 buckets; same CVE keeps its colour on a page) ===== */
-::highlight(tk-cve-0)  { background-color: rgba(239,  83,  80, 0.30); text-decoration: underline 2px #ef5350; }
-::highlight(tk-cve-1)  { background-color: rgba(255, 152,   0, 0.30); text-decoration: underline 2px #ff9800; }
-::highlight(tk-cve-2)  { background-color: rgba(255, 235,  59, 0.32); text-decoration: underline 2px #ffeb3b; }
-::highlight(tk-cve-3)  { background-color: rgba( 76, 175,  80, 0.30); text-decoration: underline 2px #4caf50; }
-::highlight(tk-cve-4)  { background-color: rgba(  0, 150, 136, 0.30); text-decoration: underline 2px #009688; }
-::highlight(tk-cve-5)  { background-color: rgba(156,  39, 176, 0.30); text-decoration: underline 2px #9c27b0; }
-::highlight(tk-cve-6)  { background-color: rgba(233,  30,  99, 0.30); text-decoration: underline 2px #e91e63; }
-::highlight(tk-cve-7)  { background-color: rgba(230, 126,  34, 0.30); text-decoration: underline 2px #e67e22; }
-::highlight(tk-cve-8)  { background-color: rgba(139, 195,  74, 0.30); text-decoration: underline 2px #8bc34a; }
-::highlight(tk-cve-9)  { background-color: rgba(255, 193,   7, 0.30); text-decoration: underline 2px #ffc107; }
-::highlight(tk-cve-10) { background-color: rgba(186, 147, 210, 0.30); text-decoration: underline 2px #ba93d2; }
-::highlight(tk-cve-11) { background-color: rgba(239, 154, 154, 0.30); text-decoration: underline 2px #ef9a9a; }
+/* ===== CVE highlights =====
+ * Background: stable per-CVE colour (12 buckets).
+ * Thick underline: CVSS severity (unknown / critical / high / medium / low / none).
+ * Composite index = severity bucket * 12 + CVE colour bucket.
+ */
+::highlight(tk-cve-0),  ::highlight(tk-cve-12), ::highlight(tk-cve-24),
+::highlight(tk-cve-36), ::highlight(tk-cve-48), ::highlight(tk-cve-60) { background-color: rgba(199, 107,  77, 0.22); }
+::highlight(tk-cve-1),  ::highlight(tk-cve-13), ::highlight(tk-cve-25),
+::highlight(tk-cve-37), ::highlight(tk-cve-49), ::highlight(tk-cve-61) { background-color: rgba(168, 118,  31, 0.20); }
+::highlight(tk-cve-2),  ::highlight(tk-cve-14), ::highlight(tk-cve-26),
+::highlight(tk-cve-38), ::highlight(tk-cve-50), ::highlight(tk-cve-62) { background-color: rgba( 91, 138,  95, 0.20); }
+::highlight(tk-cve-3),  ::highlight(tk-cve-15), ::highlight(tk-cve-27),
+::highlight(tk-cve-39), ::highlight(tk-cve-51), ::highlight(tk-cve-63) { background-color: rgba( 76, 122, 141, 0.18); }
+::highlight(tk-cve-4),  ::highlight(tk-cve-16), ::highlight(tk-cve-28),
+::highlight(tk-cve-40), ::highlight(tk-cve-52), ::highlight(tk-cve-64) { background-color: rgba(126, 110, 170, 0.18); }
+::highlight(tk-cve-5),  ::highlight(tk-cve-17), ::highlight(tk-cve-29),
+::highlight(tk-cve-41), ::highlight(tk-cve-53), ::highlight(tk-cve-65) { background-color: rgba(174,  92, 119, 0.18); }
+::highlight(tk-cve-6),  ::highlight(tk-cve-18), ::highlight(tk-cve-30),
+::highlight(tk-cve-42), ::highlight(tk-cve-54), ::highlight(tk-cve-66) { background-color: rgba( 82, 143, 132, 0.18); }
+::highlight(tk-cve-7),  ::highlight(tk-cve-19), ::highlight(tk-cve-31),
+::highlight(tk-cve-43), ::highlight(tk-cve-55), ::highlight(tk-cve-67) { background-color: rgba(185, 132,  76, 0.18); }
+::highlight(tk-cve-8),  ::highlight(tk-cve-20), ::highlight(tk-cve-32),
+::highlight(tk-cve-44), ::highlight(tk-cve-56), ::highlight(tk-cve-68) { background-color: rgba(111, 139,  75, 0.18); }
+::highlight(tk-cve-9),  ::highlight(tk-cve-21), ::highlight(tk-cve-33),
+::highlight(tk-cve-45), ::highlight(tk-cve-57), ::highlight(tk-cve-69) { background-color: rgba(187, 101,  79, 0.18); }
+::highlight(tk-cve-10), ::highlight(tk-cve-22), ::highlight(tk-cve-34),
+::highlight(tk-cve-46), ::highlight(tk-cve-58), ::highlight(tk-cve-70) { background-color: rgba(142,  99, 148, 0.18); }
+::highlight(tk-cve-11), ::highlight(tk-cve-23), ::highlight(tk-cve-35),
+::highlight(tk-cve-47), ::highlight(tk-cve-59), ::highlight(tk-cve-71) { background-color: rgba(105, 116, 128, 0.18); }
+
+::highlight(tk-cve-0),  ::highlight(tk-cve-1),  ::highlight(tk-cve-2),
+::highlight(tk-cve-3),  ::highlight(tk-cve-4),  ::highlight(tk-cve-5),
+::highlight(tk-cve-6),  ::highlight(tk-cve-7),  ::highlight(tk-cve-8),
+::highlight(tk-cve-9),  ::highlight(tk-cve-10), ::highlight(tk-cve-11) {
+  text-decoration: underline 3px dotted #b8b3a6;
+  text-underline-offset: 2px;
+}
+::highlight(tk-cve-12), ::highlight(tk-cve-13), ::highlight(tk-cve-14),
+::highlight(tk-cve-15), ::highlight(tk-cve-16), ::highlight(tk-cve-17),
+::highlight(tk-cve-18), ::highlight(tk-cve-19), ::highlight(tk-cve-20),
+::highlight(tk-cve-21), ::highlight(tk-cve-22), ::highlight(tk-cve-23) {
+  text-decoration: underline 4px #c0493d;
+  text-underline-offset: 2px;
+}
+::highlight(tk-cve-24), ::highlight(tk-cve-25), ::highlight(tk-cve-26),
+::highlight(tk-cve-27), ::highlight(tk-cve-28), ::highlight(tk-cve-29),
+::highlight(tk-cve-30), ::highlight(tk-cve-31), ::highlight(tk-cve-32),
+::highlight(tk-cve-33), ::highlight(tk-cve-34), ::highlight(tk-cve-35) {
+  text-decoration: underline 4px #d97757;
+  text-underline-offset: 2px;
+}
+::highlight(tk-cve-36), ::highlight(tk-cve-37), ::highlight(tk-cve-38),
+::highlight(tk-cve-39), ::highlight(tk-cve-40), ::highlight(tk-cve-41),
+::highlight(tk-cve-42), ::highlight(tk-cve-43), ::highlight(tk-cve-44),
+::highlight(tk-cve-45), ::highlight(tk-cve-46), ::highlight(tk-cve-47) {
+  text-decoration: underline 4px #a8761f;
+  text-underline-offset: 2px;
+}
+::highlight(tk-cve-48), ::highlight(tk-cve-49), ::highlight(tk-cve-50),
+::highlight(tk-cve-51), ::highlight(tk-cve-52), ::highlight(tk-cve-53),
+::highlight(tk-cve-54), ::highlight(tk-cve-55), ::highlight(tk-cve-56),
+::highlight(tk-cve-57), ::highlight(tk-cve-58), ::highlight(tk-cve-59) {
+  text-decoration: underline 4px #5b8a5f;
+  text-underline-offset: 2px;
+}
+::highlight(tk-cve-60), ::highlight(tk-cve-61), ::highlight(tk-cve-62),
+::highlight(tk-cve-63), ::highlight(tk-cve-64), ::highlight(tk-cve-65),
+::highlight(tk-cve-66), ::highlight(tk-cve-67), ::highlight(tk-cve-68),
+::highlight(tk-cve-69), ::highlight(tk-cve-70), ::highlight(tk-cve-71) {
+  text-decoration: underline 4px #79766e;
+  text-underline-offset: 2px;
+}
 
 /* ===== ATT&CK highlights ===== */
 ::highlight(tk-attack-0) {
@@ -149,130 +208,224 @@
 /* ===== Tooltips (shared shell) ===== */
 #__tk_cve_tooltip,
 #__tk_attack_tooltip {
+  --tk-bg: #fff !important;
+  --tk-bg-2: #f7f5ef !important;
+  --tk-line: #e7e4db !important;
+  --tk-line-2: #d8d4c8 !important;
+  --tk-ink: #1f1e1d !important;
+  --tk-ink-2: #5e5c57 !important;
+  --tk-muted: #8e8b82 !important;
+  --tk-accent: #c76b4d !important;
+  --tk-accent-2: #af573c !important;
+  --tk-accent-soft: #f7e9e1 !important;
+  --tk-ok: #5b8a5f !important;
+  --tk-ok-soft: #e9f1e8 !important;
+  --tk-warn: #a8761f !important;
+  --tk-warn-soft: #f8efd9 !important;
+  --tk-err: #c0493d !important;
+  --tk-err-soft: #f9e6e3 !important;
   position: fixed !important;
-  background: #1a1a2e !important;
-  color: #e0e0e0 !important;
-  border: 1px solid #333 !important;
-  border-radius: 8px !important;
-  padding: 12px 16px !important;
-  min-width: 220px !important;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+  background: var(--tk-bg) !important;
+  color: var(--tk-ink) !important;
+  border: 1px solid var(--tk-line) !important;
+  border-radius: 18px !important;
+  padding: 0 !important;
+  min-width: 280px !important;
+  font-family: ui-rounded, 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN',
+    'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic UI', system-ui, sans-serif !important;
   font-size: 13px !important;
-  line-height: 1.5 !important;
-  pointer-events: none !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+  line-height: 1.65 !important;
+  letter-spacing: 0.01em !important;
+  -webkit-font-smoothing: antialiased !important;
+  pointer-events: auto !important;
+  user-select: text !important;
+  cursor: auto !important;
+  box-shadow: 0 1px 2px rgba(31, 30, 29, 0.06),
+    0 10px 30px rgba(31, 30, 29, 0.12) !important;
   overflow-wrap: anywhere !important;
+  max-height: calc(100vh - 16px) !important;
+  overflow-y: auto !important;
+  box-sizing: border-box !important;
+  isolation: isolate !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  #__tk_cve_tooltip,
+  #__tk_attack_tooltip {
+    --tk-bg: #30302e !important;
+    --tk-bg-2: #3a3936 !important;
+    --tk-line: #3e3d39 !important;
+    --tk-line-2: #4c4a45 !important;
+    --tk-ink: #eceae3 !important;
+    --tk-ink-2: #b8b5ac !important;
+    --tk-muted: #96928a !important;
+    --tk-accent: #d97757 !important;
+    --tk-accent-2: #e38a6c !important;
+    --tk-accent-soft: #473730 !important;
+    --tk-ok-soft: #2f3a30 !important;
+    --tk-warn-soft: #3f3728 !important;
+    --tk-err-soft: #45302d !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3),
+      0 10px 30px rgba(0, 0, 0, 0.35) !important;
+  }
 }
 
 #__tk_cve_tooltip {
-  max-width: 440px !important;
+  width: min(480px, calc(100vw - 16px)) !important;
+  max-width: 480px !important;
   z-index: 2147483644 !important;
 }
 
 #__tk_attack_tooltip {
-  max-width: 400px !important;
-  border-color: #3f51b5 !important;
+  width: min(440px, calc(100vw - 16px)) !important;
+  max-width: 440px !important;
   z-index: 2147483642 !important;
+}
+
+#__tk_cve_tooltip ::selection,
+#__tk_attack_tooltip ::selection {
+  background: var(--tk-accent-soft) !important;
+  color: var(--tk-ink) !important;
 }
 
 .__tk_tt_header {
   display: flex !important;
   align-items: center !important;
   flex-wrap: wrap !important;
-  gap: 8px !important;
-  margin-bottom: 6px !important;
+  gap: 7px !important;
+  margin: 0 !important;
+  padding: 13px 16px 12px !important;
+  background: var(--tk-bg-2) !important;
+  border-bottom: 1px solid var(--tk-line) !important;
+}
+
+.__tk_tt_header::before {
+  content: 'THREATKEY' !important;
+  flex-basis: 100% !important;
+  color: var(--tk-accent) !important;
+  font-size: 9px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.16em !important;
+  line-height: 1.2 !important;
 }
 
 .__tk_cve_tt_title {
   font-weight: 700 !important;
-  font-size: 14px !important;
-  color: #fff !important;
-  font-family: 'Consolas', 'Monaco', monospace !important;
+  font-size: 15px !important;
+  color: var(--tk-ink) !important;
+  font-family: 'SF Mono', 'Cascadia Mono', 'Consolas', monospace !important;
+  letter-spacing: -0.02em !important;
 }
 
 .__tk_attack_tt_title {
   font-weight: 700 !important;
   font-size: 14px !important;
-  color: #7986cb !important;
-  font-family: 'Consolas', 'Monaco', monospace !important;
+  color: var(--tk-accent-2) !important;
+  font-family: 'SF Mono', 'Cascadia Mono', 'Consolas', monospace !important;
 }
 
 .__tk_attack_tt_name {
   font-weight: 600 !important;
   font-size: 13px !important;
-  color: #fff !important;
+  color: var(--tk-ink) !important;
 }
 
 .__tk_tt_tactics {
   display: flex !important;
   flex-wrap: wrap !important;
-  gap: 4px !important;
-  margin-bottom: 6px !important;
+  gap: 5px !important;
+  margin: 12px 18px 0 !important;
 }
 
 .__tk_tt_moved {
-  color: #ffb74d !important;
+  color: var(--tk-warn) !important;
   font-size: 12px !important;
-  font-family: 'Consolas', 'Monaco', monospace !important;
-  margin-bottom: 6px !important;
+  font-family: 'SF Mono', 'Cascadia Mono', 'Consolas', monospace !important;
+  margin: 12px 18px 0 !important;
+  padding: 7px 10px !important;
+  border-radius: 9px !important;
+  background: var(--tk-warn-soft) !important;
 }
 
 .__tk_tt_meta {
-  color: #8892b0 !important;
-  font-size: 11px !important;
-  margin-bottom: 6px !important;
+  color: var(--tk-muted) !important;
+  font-size: 11.5px !important;
+  margin: 12px 18px 0 !important;
 }
 
 .__tk_tt_vector {
-  color: #6f7c96 !important;
+  color: var(--tk-ink-2) !important;
   font-size: 11px !important;
-  font-family: 'Consolas', 'Monaco', monospace !important;
-  margin-bottom: 6px !important;
+  font-family: 'SF Mono', 'Cascadia Mono', 'Consolas', monospace !important;
+  margin: 9px 18px 0 !important;
+  padding: 7px 10px !important;
+  border: 1px solid var(--tk-line) !important;
+  border-radius: 9px !important;
+  background: var(--tk-bg-2) !important;
 }
 
 .__tk_tt_desc {
-  color: #bbb !important;
-  font-size: 12px !important;
-  line-height: 1.6 !important;
+  color: var(--tk-ink) !important;
+  font-size: 13.5px !important;
+  line-height: 1.85 !important;
+  padding: 15px 18px 12px !important;
+  white-space: pre-wrap !important;
+}
+
+.__tk_tt_note {
+  color: var(--tk-warn) !important;
+  font-size: 11px !important;
+  margin-top: 8px !important;
+  padding: 7px 10px !important;
+  border-radius: 8px !important;
+  background: var(--tk-warn-soft) !important;
 }
 
 .__tk_tt_link {
-  color: #5c6bc0 !important;
+  color: var(--tk-accent-2) !important;
   font-size: 11px !important;
-  font-family: 'Consolas', 'Monaco', monospace !important;
-  opacity: 0.7 !important;
-  margin-top: 6px !important;
+  font-family: 'SF Mono', 'Cascadia Mono', 'Consolas', monospace !important;
+  margin: 0 !important;
+  padding: 10px 18px 12px !important;
+  border-top: 1px solid var(--tk-line) !important;
+  background: var(--tk-bg-2) !important;
 }
 
 /* ===== Badges ===== */
 .__tk_badge {
   display: inline-block !important;
-  padding: 2px 8px !important;
-  border-radius: 4px !important;
+  padding: 2px 8px 3px !important;
+  border: 1px solid transparent !important;
+  border-radius: 999px !important;
   font-size: 10px !important;
   font-weight: 700 !important;
-  letter-spacing: 0.3px !important;
+  line-height: 1.35 !important;
+  letter-spacing: 0.02em !important;
   white-space: nowrap !important;
-  color: #fff !important;
 }
 
 .__tk_tactic {
   text-transform: uppercase !important;
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
-.__tk_sev_critical { background: #d32f2f !important; }
-.__tk_sev_high     { background: #f57c00 !important; }
-.__tk_sev_medium   { background: #fbc02d !important; color: #1a1a2e !important; }
-.__tk_sev_low      { background: #388e3c !important; }
-.__tk_sev_none     { background: #546e7a !important; }
+.__tk_sev_critical { background: var(--tk-err-soft) !important; color: var(--tk-err) !important; border-color: color-mix(in srgb, var(--tk-err) 28%, transparent) !important; }
+.__tk_sev_high     { background: var(--tk-accent-soft) !important; color: var(--tk-accent-2) !important; border-color: color-mix(in srgb, var(--tk-accent) 30%, transparent) !important; }
+.__tk_sev_medium   { background: var(--tk-warn-soft) !important; color: var(--tk-warn) !important; border-color: color-mix(in srgb, var(--tk-warn) 28%, transparent) !important; }
+.__tk_sev_low      { background: var(--tk-ok-soft) !important; color: var(--tk-ok) !important; border-color: color-mix(in srgb, var(--tk-ok) 28%, transparent) !important; }
+.__tk_sev_none     { background: var(--tk-bg-2) !important; color: var(--tk-ink-2) !important; border-color: var(--tk-line-2) !important; }
 
 .__tk_kev {
-  background: #b71c1c !important;
-  border: 1px solid #ff5252 !important;
+  background: var(--tk-err-soft) !important;
+  color: var(--tk-err) !important;
+  border-color: color-mix(in srgb, var(--tk-err) 28%, transparent) !important;
 }
 
 .__tk_retired {
-  background: #455a64 !important;
+  background: var(--tk-bg-2) !important;
+  color: var(--tk-muted) !important;
+  border-color: var(--tk-line-2) !important;
 }
 
 /* ===== Base64 / defang result popup ===== */

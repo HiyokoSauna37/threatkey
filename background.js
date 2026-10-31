@@ -198,11 +198,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
   if (msg.action === ACTIONS.FETCH_CVE) {
     if (!/^CVE-\d{4}-\d{4,7}$/i.test(msg.cveId || '')) {
-      sendResponse({ error: 'Invalid CVE ID' });
+      sendResponse({ error: 'CVE番号の形式が正しくありません。' });
       return false;
     }
     fetchCve(msg.cveId.toUpperCase())
-      .then(sendResponse, (err) => sendResponse({ error: String(err && err.message || err) }));
+      .then(sendResponse, (err) => sendResponse({
+        error: 'CVE情報の取得に失敗しました: ' + String(err && err.message || err),
+      }));
     return true; // keep the channel open for the async reply
   }
 
@@ -327,13 +329,16 @@ async function fetchNvd(cveId, apiKey) {
   }
 
   const vuln = json.vulnerabilities && json.vulnerabilities[0] && json.vulnerabilities[0].cve;
-  if (!vuln) return { error: 'Not found in NVD' };
+  if (!vuln) return { error: 'NVDに該当するCVE情報がありません。' };
 
   const descriptions = vuln.descriptions || [];
+  const japanese = descriptions.find((d) => d.lang === 'ja');
   const english = descriptions.find((d) => d.lang === 'en') || descriptions[0];
+  const description = japanese || english;
 
   const result = {
-    description: english ? english.value : '',
+    description: description ? description.value : '',
+    descriptionLang: description ? description.lang : null,
     published: vuln.published || null,
     score: null,
     severity: null,
@@ -355,12 +360,15 @@ async function fetchNvd(cveId, apiKey) {
 }
 
 function describeNvdError(err) {
-  if (err.name === 'AbortError') return 'NVD timed out';
+  if (err.name === 'AbortError') return 'NVDへの接続がタイムアウトしました。';
   if (err.status === 403 || err.status === 429) {
-    return 'NVD rate limit hit — add an API key in the extension options';
+    return 'NVDのレート制限に達しました。拡張機能のオプションでNVD APIキーを設定してください。';
   }
-  if (err.status === 404) return 'Not found in NVD';
-  return 'NVD error: ' + err.message;
+  if (err.status === 404) return 'NVDに該当するCVE情報がありません。';
+  if (/Too many pending/i.test(err.message || '')) {
+    return 'NVDへの取得待ちが多すぎます。しばらく待ってから再度ホバーしてください。';
+  }
+  return 'NVDからの取得に失敗しました: ' + err.message;
 }
 
 // ===== Combined lookup =====

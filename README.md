@@ -12,9 +12,9 @@
 
 ThreatKey combines **KeySelect** — selecting on-page text without touching the mouse — with one-key lookups against common threat-intelligence services, plus automatic highlighting of CVE IDs and MITRE ATT&CK technique IDs as you read. It's built for reading advisories, incident reports, and threat write-ups faster.
 
-## Latest update — October 26, 2026
+## Latest update — October 31, 2026
 
-The icon now combines an open radar ring and a key on a transparent background, with 16, 32, 48 and 128px assets for the toolbar and extension manager. Existing installations need to [update the extension files and reload ThreatKey](#updating-an-existing-installation) to show the new icon.
+**v3.1.0** keeps the existing per-CVE background colours and adds a thick underline coloured by CVSS severity. CVE data is prefetched in a rate-limited queue, so severity becomes visible before hover. The hover card is now localized into Japanese and remains open while the pointer is over it, making its description selectable and copyable. The tooltip and options page also use a warmer, quieter visual system with generous radii and subtle borders.
 
 ## Features
 
@@ -22,7 +22,7 @@ The icon now combines an open radar ring and a key on a transparent background, 
 |---|---|
 | KeySelect (keyboard text selection) | `Ctrl+Shift+F` |
 | Threat-intel lookup on selected text | Select text + `Ctrl+Shift+Z/L/E/V` |
-| CVE highlighting + NVD / CISA KEV / EPSS tooltip | Automatic (hover for details) |
+| CVE highlighting + severity underline + Japanese tooltip | Automatic (severity before hover, details on hover) |
 | MITRE ATT&CK highlighting + tooltip | Automatic (hover for details) |
 | Copy URLs of all highlighted tabs | Click the toolbar icon |
 | Base64 encode/decode, defang/refang | Right-click a selection |
@@ -77,10 +77,12 @@ Select text on a page and press a shortcut to open the matching service's search
 
 Highlighting uses the [CSS Custom Highlight API](https://developer.mozilla.org/docs/Web/API/CSS_Custom_Highlight_API), so the browser paints matches together with the text — there are no overlay elements to keep aligned, and scrolling costs nothing.
 
-- **CVE** — `CVE-XXXX-XXXX` patterns are highlighted automatically, and the same CVE always gets the same colour on a page. Hovering shows:
+- **CVE** — `CVE-XXXX-XXXX` patterns are highlighted automatically. The background keeps a stable per-CVE colour, while a thick underline reports CVSS severity (critical=red, high=orange, medium=yellow, low=green, none=grey, pending/unknown=grey dotted). A rate-limited queue prefetches CVE data and updates the underline before hover as each result arrives. Hovering shows:
   - CVSS score and severity from the NVD API (v4.0 metrics preferred, falling back to v3.1 → v3.0 → v2), plus the vector string and publication date
   - a **KEV** badge when the CVE is in the [CISA Known Exploited Vulnerabilities](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) catalog, flagged separately when it is linked to ransomware campaigns
   - the **EPSS** exploitation probability from [FIRST](https://www.first.org/epss/)
+  - an on-device Japanese translation of NVD's English description using Chrome's built-in Translator API; translations are cached locally and are not sent to Claude or another translation service
+  - selectable tooltip text: moving the pointer from the CVE into the card no longer dismisses it
 - **ATT&CK** — technique IDs in `T1234` / `T1234.001` form are highlighted from the bundled `attack-data.json` (no network request). Hovering shows the name, every tactic, matrix, platforms and description. Deprecated and revoked IDs are struck through and, where MITRE defines a replacement, the tooltip points at it (`T0803 → T1691.001 Command Message`), which is what you want when reading older reports.
 
 Responses are cached in `chrome.storage.local` (7 days for a hit, 10 minutes for an error) and NVD requests are queued and spaced out so a page full of CVEs cannot trip the public rate limit.
@@ -90,9 +92,10 @@ Responses are cached in `chrome.storage.local` (7 days for a hit, 10 minutes for
 Open the extension's options page (`chrome://extensions/` → ThreatKey → *Extension options*) to:
 
 - turn CVE or ATT&CK highlighting on and off
+- turn Japanese translation of CVE descriptions on and off (Chrome 138+)
 - include or exclude deprecated / revoked ATT&CK IDs
 - set an **NVD API key** — optional, but it raises the limit from 5 to 50 requests per 30 seconds ([request one here](https://nvd.nist.gov/developers/request-an-api-key))
-- see which ATT&CK version is bundled and clear the CVE / KEV caches
+- see which ATT&CK version is bundled and clear the CVE / translation / KEV caches
 
 ## Files
 
@@ -154,7 +157,7 @@ The script downloads the STIX bundles into `.attack-cache/` (git-ignored) and re
 
 [Releases](https://github.com/HiyokoSauna37/threatkey/releases) provides versioned packages. A release ZIP contains the files from its tag and does not automatically include later changes on `main`; use the main ZIP above for the latest icon and features.
 
-Requires **Chrome 105+** (CSS Custom Highlight API). No build step is needed on Windows or macOS.
+Requires **Chrome 105+** (CSS Custom Highlight API). On-device Japanese translation of CVE descriptions requires **Chrome 138+**. No build step is needed on Windows or macOS.
 
 ### Updating an existing installation
 

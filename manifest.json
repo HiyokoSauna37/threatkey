@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ThreatKey",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "キーボードでテキスト選択＆脅威インテリジェンス即時参照（NVD / CISA KEV / EPSS / MITRE ATT&CK / RansomLook / Malpedia / VirusTotal）",
   "minimum_chrome_version": "105",
   "permissions": [
