@@ -14,7 +14,7 @@ ThreatKey combines **KeySelect** — selecting on-page text without touching the
 
 ## Latest update — October 31, 2026
 
-**v3.1.0** keeps the existing per-CVE background colours and adds a thick underline coloured by CVSS severity. CVE data is prefetched in a rate-limited queue, so severity becomes visible before hover. The hover card is now localized into Japanese and remains open while the pointer is over it, making its description selectable and copyable. The tooltip and options page also use a warmer, quieter visual system with generous radii and subtle borders.
+**v3.2.0** makes CVE hover cards movable: drag a card by its header to pin it anywhere, then hover another CVE to open an additional card. A CVE can have only one card, and every card has its own close button. The visual system is also softer, replacing near-black surfaces with warm greige, quieter borders and gentler shadows inspired by Yomeru.
 
 ## Features
 
@@ -83,6 +83,7 @@ Highlighting uses the [CSS Custom Highlight API](https://developer.mozilla.org/d
   - the **EPSS** exploitation probability from [FIRST](https://www.first.org/epss/)
   - an on-device Japanese translation of NVD's English description using Chrome's built-in Translator API; translations are cached locally and are not sent to Claude or another translation service
   - selectable tooltip text: moving the pointer from the CVE into the card no longer dismisses it
+  - movable cards: drag the header to pin a card, keep it open while adding cards for other CVEs, reuse the existing card for duplicate CVEs, and close each card with its top-right button
 - **ATT&CK** — technique IDs in `T1234` / `T1234.001` form are highlighted from the bundled `attack-data.json` (no network request). Hovering shows the name, every tactic, matrix, platforms and description. Deprecated and revoked IDs are struck through and, where MITRE defines a replacement, the tooltip points at it (`T0803 → T1691.001 Command Message`), which is what you want when reading older reports.
 
 Responses are cached in `chrome.storage.local` (7 days for a hit, 10 minutes for an error) and NVD requests are queued and spaced out so a page full of CVEs cannot trip the public rate limit.

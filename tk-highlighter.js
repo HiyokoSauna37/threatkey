@@ -54,6 +54,8 @@
    * @param {function(string): number} [config.bucketFor] - id -> bucket index
    * @param {string} config.tooltipId - element id for this source's tooltip
    * @param {number} config.tooltipWidth - fallback width before first layout
+   * @param {boolean} [config.draggableTooltip] - dragging the header pins a movable card
+   * @param {boolean} [config.closeableTooltip] - add a close button to the card
    * @param {function(string[]): void} [config.onIdsChanged] - visible ids after a scan
    * @param {function(string, HTMLElement, function(): boolean)} config.renderTooltip
    * @returns {{start: function(), stop: function(), refresh: function()}}
@@ -67,10 +69,14 @@
       bucketFor: config.bucketFor || (() => 0),
       tooltipId: config.tooltipId,
       tooltipWidth: config.tooltipWidth,
+      draggableTooltip: !!config.draggableTooltip,
+      closeableTooltip: !!config.closeableTooltip,
       onIdsChanged: config.onIdsChanged,
       renderTooltip: config.renderTooltip,
       cssNames: [],
       tooltip: null,
+      pinnedTooltips: new Map(),
+      tooltipSerial: 0,
       active: false,
     };
     for (let i = 0; i < (config.buckets || 1); i++) {
@@ -114,7 +120,7 @@
     document.addEventListener('mousemove', onPointerMove, { passive: true });
     document.addEventListener('mouseup', onPointerUp, { passive: true });
     document.addEventListener('scroll', onScroll, { capture: true, passive: true });
-    window.addEventListener('resize', hideTooltips, { passive: true });
+    window.addEventListener('resize', onResize, { passive: true });
     document.addEventListener('visibilitychange', onVisibilityChange);
     window.addEventListener('pagehide', teardown);
 
@@ -282,6 +288,9 @@
     if (!supported) return;
     for (const cssName of source.cssNames) CSS.highlights.delete(cssName);
     if (engine.hover && engine.hover.source === source) hideTooltips();
+    if (source.tooltip) source.tooltip.style.display = 'none';
+    for (const tooltip of source.pinnedTooltips.values()) tooltip.remove();
+    source.pinnedTooltips.clear();
   }
 
   // ===== Hover =====
@@ -313,8 +322,9 @@
     if (engine.hover && engine.hover.id === hit.id && engine.hover.source === hit.source) {
       // Same ID, different occurrence: move the tooltip, keep its content.
       if (engine.hover.entry !== hit.entry) {
-        engine.hover = hit;
-        position(hit.source, hit.rect);
+        const pinned = !!engine.hover.pinned;
+        engine.hover = Object.assign({}, hit, { pinned: pinned });
+        if (!pinned) position(hit.source, hit.rect);
       }
       return;
     }
@@ -387,18 +397,47 @@
     const root = document.documentElement || document.body;
     const el = document.createElement('div');
     el.id = source.tooltipId;
+    el.dataset.tkTooltip = source.name;
     el.style.display = 'none';
+
+    const content = document.createElement('div');
+    content.className = '__tk_tt_content';
+    el.appendChild(content);
+    el.__tkContent = content;
+
+    if (source.closeableTooltip || source.draggableTooltip) {
+      const close = document.createElement('button');
+      close.type = 'button';
+      close.className = '__tk_tt_close';
+      close.setAttribute('aria-label', '閉じる');
+      close.title = '閉じる';
+      close.textContent = '×';
+      close.addEventListener('pointerdown', (event) => event.stopPropagation());
+      close.addEventListener('mousedown', (event) => event.stopPropagation());
+      close.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        closeTooltip(source, el);
+      });
+      el.appendChild(close);
+    }
+
     el.addEventListener('mouseenter', cancelScheduledHide);
     el.addEventListener('mouseleave', scheduleHide);
-    el.addEventListener('mousedown', () => {
+    el.addEventListener('mousedown', (event) => {
+      if (event.button !== 0) return;
       engine.tooltipPointerDown = true;
       cancelScheduledHide();
     });
+    if (source.draggableTooltip) installTooltipDrag(source, el);
     root.appendChild(el);
+
     // The tooltip grows when async data lands; keep it anchored.
     if (typeof ResizeObserver === 'function') {
       new ResizeObserver(() => {
-        if (engine.hover && engine.hover.source === source) position(source, engine.hover.rect);
+        if (source.tooltip === el && engine.hover && !engine.hover.pinned &&
+            engine.hover.source === source) position(source, engine.hover.rect);
+        else if (source.pinnedTooltips.get(el.dataset.tkId) === el) constrainTooltip(el);
       }).observe(el);
     }
     source.tooltip = el;
@@ -408,26 +447,154 @@
   function showTooltip(hit) {
     cancelScheduledHide();
     const source = hit.source;
+    const existing = source.pinnedTooltips.get(hit.id);
+    if (existing && existing.isConnected) {
+      for (const s of engine.sources) {
+        if (s.tooltip) s.tooltip.style.display = 'none';
+      }
+      engine.hover = Object.assign({}, hit, { pinned: true });
+      bringToFront(existing);
+      return;
+    }
+    if (existing) source.pinnedTooltips.delete(hit.id);
+
     for (const s of engine.sources) {
       if (s !== source && s.tooltip) s.tooltip.style.display = 'none';
     }
 
     const el = ensureTooltip(source);
-    engine.hover = hit;
+    const content = el.__tkContent || el;
+    engine.hover = Object.assign({}, hit, { pinned: false });
+    el.dataset.tkId = hit.id;
+    el.dataset.tkPinned = 'false';
+    el.classList.remove('__tk_tt_pinned', '__tk_tt_dragging');
 
     el.style.visibility = 'hidden';
     el.style.display = 'block';
     // isCurrent() compares id + source (not object identity) so an async render
     // still lands when the pointer moved to another occurrence of the same ID.
+    // A card that became pinned must also keep receiving its async CVE data.
     const isCurrent = () =>
-      engine.hover !== null && engine.hover.id === hit.id && engine.hover.source === source;
+      (source.tooltip === el && engine.hover !== null && !engine.hover.pinned &&
+        engine.hover.id === hit.id && engine.hover.source === source) ||
+      source.pinnedTooltips.get(hit.id) === el;
     try {
-      source.renderTooltip(hit.id, el, isCurrent);
+      source.renderTooltip(hit.id, content, isCurrent);
     } catch (e) {
-      el.textContent = hit.id;
+      content.textContent = hit.id;
     }
     position(source, hit.rect);
     el.style.visibility = '';
+  }
+
+  function installTooltipDrag(source, el) {
+    let drag = null;
+
+    el.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0 || !(event.target instanceof Element)) return;
+      if (event.target.closest('.__tk_tt_close')) return;
+      const header = event.target.closest('.__tk_tt_header');
+      if (!header || !el.contains(header)) return;
+
+      const rect = el.getBoundingClientRect();
+      drag = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+        height: rect.height,
+        moved: false,
+      };
+      engine.tooltipPointerDown = true;
+      cancelScheduledHide();
+      bringToFront(el);
+      try { el.setPointerCapture(event.pointerId); } catch (e) { /* no-op */ }
+      event.preventDefault();
+    });
+
+    el.addEventListener('pointermove', (event) => {
+      if (!drag || event.pointerId !== drag.pointerId) return;
+      const dx = event.clientX - drag.startX;
+      const dy = event.clientY - drag.startY;
+      if (!drag.moved && Math.hypot(dx, dy) < 4) return;
+
+      if (!drag.moved) {
+        drag.moved = true;
+        if (pinTooltip(source, el) !== el) {
+          drag = null;
+          engine.tooltipPointerDown = false;
+          return;
+        }
+        el.classList.add('__tk_tt_dragging');
+      }
+
+      const maxLeft = Math.max(8, window.innerWidth - drag.width - 8);
+      const maxTop = Math.max(8, window.innerHeight - drag.height - 8);
+      const left = Math.min(maxLeft, Math.max(8, drag.left + dx));
+      const top = Math.min(maxTop, Math.max(8, drag.top + dy));
+      el.style.left = left + 'px';
+      el.style.top = top + 'px';
+      event.preventDefault();
+    });
+
+    const finishDrag = (event) => {
+      if (!drag || event.pointerId !== drag.pointerId) return;
+      const moved = drag.moved;
+      try { el.releasePointerCapture(event.pointerId); } catch (e) { /* no-op */ }
+      drag = null;
+      engine.tooltipPointerDown = false;
+      el.classList.remove('__tk_tt_dragging');
+      if (moved) {
+        engine.hover = null;
+        cancelScheduledHide();
+        event.preventDefault();
+      }
+    };
+    el.addEventListener('pointerup', finishDrag);
+    el.addEventListener('pointercancel', finishDrag);
+  }
+
+  function pinTooltip(source, el) {
+    const id = el.dataset.tkId;
+    if (!id) return null;
+    const existing = source.pinnedTooltips.get(id);
+    if (existing && existing !== el && existing.isConnected) {
+      if (source.tooltip === el) source.tooltip = null;
+      el.remove();
+      bringToFront(existing);
+      return existing;
+    }
+
+    source.pinnedTooltips.set(id, el);
+    if (source.tooltip === el) source.tooltip = null;
+    el.id = source.tooltipId + '--pinned-' + (++source.tooltipSerial);
+    el.dataset.tkPinned = 'true';
+    el.classList.add('__tk_tt_pinned');
+    bringToFront(el);
+    return el;
+  }
+
+  function closeTooltip(source, el) {
+    cancelScheduledHide();
+    const id = el.dataset.tkId;
+    if (id && source.pinnedTooltips.get(id) === el) {
+      source.pinnedTooltips.delete(id);
+      el.remove();
+    } else if (source.tooltip === el) {
+      el.style.display = 'none';
+    } else {
+      el.remove();
+    }
+    if (engine.hover && engine.hover.source === source && engine.hover.id === id) {
+      engine.hover = null;
+    }
+    engine.tooltipPointerDown = false;
+  }
+
+  function bringToFront(el) {
+    if (el && el.parentNode) el.parentNode.appendChild(el);
   }
 
   function hideTooltips() {
@@ -473,6 +640,13 @@
     hideTooltips();
   }
 
+  function onResize() {
+    hideTooltips();
+    for (const source of engine.sources) {
+      for (const tooltip of source.pinnedTooltips.values()) constrainTooltip(tooltip);
+    }
+  }
+
   function pointerInsideVisibleTooltip() {
     const x = engine.pointer.x;
     const y = engine.pointer.y;
@@ -515,5 +689,16 @@
 
     el.style.left = left + 'px';
     el.style.top = top + 'px';
+  }
+
+  function constrainTooltip(el) {
+    if (!el || !el.isConnected) return;
+    const rect = el.getBoundingClientRect();
+    const maxLeft = Math.max(8, window.innerWidth - rect.width - 8);
+    const maxTop = Math.max(8, window.innerHeight - rect.height - 8);
+    const left = Math.min(maxLeft, Math.max(8, rect.left));
+    const top = Math.min(maxTop, Math.max(8, rect.top));
+    if (left !== rect.left) el.style.left = left + 'px';
+    if (top !== rect.top) el.style.top = top + 'px';
   }
 })();

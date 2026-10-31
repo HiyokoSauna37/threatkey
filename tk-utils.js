@@ -60,7 +60,9 @@
               // FILTER_REJECT on an element prunes the whole subtree, which is
               // what makes this cheaper than a text-only walk.
               if (SKIP_TAGS[node.tagName]) return NodeFilter.FILTER_REJECT;
-              if (node.id && TK_UI_IDS[node.id]) return NodeFilter.FILTER_REJECT;
+              if ((node.id && TK_UI_IDS[node.id]) || node.hasAttribute('data-tk-tooltip')) {
+                return NodeFilter.FILTER_REJECT;
+              }
               return NodeFilter.FILTER_SKIP;
             }
             return matchFn(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;

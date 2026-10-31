@@ -6,11 +6,11 @@
   <style>
     :root {
       color-scheme: light;
-      --bg: #faf9f5; --bg-2: #f2f0e9; --panel: #fff;
-      --line: #e7e4db; --line-2: #d8d4c8;
-      --ink: #1f1e1d; --ink-2: #5e5c57; --muted: #8e8b82;
-      --accent: #c76b4d; --accent-2: #af573c; --accent-soft: #f7e9e1;
-      --ok: #5b8a5f; --shadow: 0 2px 3px rgba(31,30,29,.025), 0 8px 24px rgba(31,30,29,.055);
+      --bg: #f7f3eb; --bg-2: #efeae0; --panel: #fffdf9;
+      --line: #e5ded2; --line-2: #d8cfc1;
+      --ink: #2d2925; --ink-2: #686159; --muted: #756e66;
+      --accent: #a95d43; --accent-2: #954d35; --accent-soft: #f6e8df;
+      --ok: #648a66; --shadow: 0 2px 3px rgba(77,62,50,.025), 0 10px 28px rgba(77,62,50,.06);
       --sans: ui-rounded, "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Hiragino Sans",
         "Noto Sans JP", "Yu Gothic UI", system-ui, sans-serif;
       --mono: "SF Mono", "Cascadia Mono", "Consolas", monospace;
@@ -18,11 +18,11 @@
     @media (prefers-color-scheme: dark) {
       :root {
         color-scheme: dark;
-        --bg: #262624; --bg-2: #2e2d2a; --panel: #30302e;
-        --line: #3e3d39; --line-2: #4c4a45;
-        --ink: #eceae3; --ink-2: #b8b5ac; --muted: #9b978e;
-        --accent: #d97757; --accent-2: #e38a6c; --accent-soft: #473730;
-        --shadow: 0 2px 3px rgba(0,0,0,.12), 0 8px 24px rgba(0,0,0,.18);
+        --bg: #3a3732; --bg-2: #403c36; --panel: #45413b;
+        --line: #575149; --line-2: #6b645a;
+        --ink: #f3eee6; --ink-2: #d0c7bb; --muted: #bdb4a8;
+        --accent: #f0ad91; --accent-2: #f7bea5; --accent-soft: #5b443a;
+        --shadow: 0 2px 3px rgba(30,24,20,.08), 0 10px 28px rgba(30,24,20,.16);
       }
     }
     * { box-sizing: border-box; }
@@ -121,7 +121,7 @@
       <label class="row">
         <input type="checkbox" id="cveHighlight">
         <span>CVE をハイライトする
-          <span class="hint">背景色でCVEを区別し、太い下線でCVSS severityを表示。ホバーで NVD / CISA KEV / EPSS を表示</span></span>
+          <span class="hint">背景色でCVEを区別し、太い下線でCVSS severityを表示。ホバーカードはヘッダーのドラッグで固定、右上の×で閉じる</span></span>
       </label>
       <div class="severity-key hint" aria-label="severityの色">
         <span style="--sev:#c0493d">緊急</span>

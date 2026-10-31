@@ -206,18 +206,18 @@
 }
 
 /* ===== Tooltips (shared shell) ===== */
-#__tk_cve_tooltip,
-#__tk_attack_tooltip {
-  --tk-bg: #fff !important;
-  --tk-bg-2: #f7f5ef !important;
-  --tk-line: #e7e4db !important;
-  --tk-line-2: #d8d4c8 !important;
-  --tk-ink: #1f1e1d !important;
-  --tk-ink-2: #5e5c57 !important;
-  --tk-muted: #8e8b82 !important;
-  --tk-accent: #c76b4d !important;
-  --tk-accent-2: #af573c !important;
-  --tk-accent-soft: #f7e9e1 !important;
+[data-tk-tooltip="cve"],
+[data-tk-tooltip="attack"] {
+  --tk-bg: #fffdf9 !important;
+  --tk-bg-2: #f6f1e8 !important;
+  --tk-line: #e5ded2 !important;
+  --tk-line-2: #d8cfc1 !important;
+  --tk-ink: #2d2925 !important;
+  --tk-ink-2: #686159 !important;
+  --tk-muted: #756e66 !important;
+  --tk-accent: #a95d43 !important;
+  --tk-accent-2: #954d35 !important;
+  --tk-accent-soft: #f6e8df !important;
   --tk-ok: #5b8a5f !important;
   --tk-ok-soft: #e9f1e8 !important;
   --tk-warn: #a8761f !important;
@@ -240,52 +240,107 @@
   pointer-events: auto !important;
   user-select: text !important;
   cursor: auto !important;
-  box-shadow: 0 1px 2px rgba(31, 30, 29, 0.06),
-    0 10px 30px rgba(31, 30, 29, 0.12) !important;
+  box-shadow: 0 1px 2px rgba(77, 62, 50, 0.05),
+    0 12px 34px rgba(77, 62, 50, 0.11) !important;
   overflow-wrap: anywhere !important;
   max-height: calc(100vh - 16px) !important;
-  overflow-y: auto !important;
+  overflow: hidden !important;
   box-sizing: border-box !important;
   isolation: isolate !important;
 }
 
 @media (prefers-color-scheme: dark) {
-  #__tk_cve_tooltip,
-  #__tk_attack_tooltip {
-    --tk-bg: #30302e !important;
-    --tk-bg-2: #3a3936 !important;
-    --tk-line: #3e3d39 !important;
-    --tk-line-2: #4c4a45 !important;
-    --tk-ink: #eceae3 !important;
-    --tk-ink-2: #b8b5ac !important;
-    --tk-muted: #96928a !important;
-    --tk-accent: #d97757 !important;
-    --tk-accent-2: #e38a6c !important;
-    --tk-accent-soft: #473730 !important;
-    --tk-ok-soft: #2f3a30 !important;
-    --tk-warn-soft: #3f3728 !important;
-    --tk-err-soft: #45302d !important;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3),
-      0 10px 30px rgba(0, 0, 0, 0.35) !important;
+  [data-tk-tooltip="cve"],
+  [data-tk-tooltip="attack"] {
+    --tk-bg: #45413b !important;
+    --tk-bg-2: #4d4841 !important;
+    --tk-line: #5c564d !important;
+    --tk-line-2: #6c655b !important;
+    --tk-ink: #f3eee6 !important;
+    --tk-ink-2: #d0c7bb !important;
+    --tk-muted: #bdb4a8 !important;
+    --tk-accent: #f0ad91 !important;
+    --tk-accent-2: #f7bea5 !important;
+    --tk-accent-soft: #5b443a !important;
+    --tk-ok-soft: #3f5041 !important;
+    --tk-warn-soft: #554a36 !important;
+    --tk-err-soft: #5b403b !important;
+    box-shadow: 0 1px 2px rgba(30, 24, 20, 0.18),
+      0 12px 34px rgba(30, 24, 20, 0.24) !important;
   }
 }
 
-#__tk_cve_tooltip {
+[data-tk-tooltip="cve"] {
   width: min(480px, calc(100vw - 16px)) !important;
   max-width: 480px !important;
   z-index: 2147483644 !important;
 }
 
-#__tk_attack_tooltip {
+[data-tk-tooltip="attack"] {
   width: min(440px, calc(100vw - 16px)) !important;
   max-width: 440px !important;
   z-index: 2147483642 !important;
 }
 
-#__tk_cve_tooltip ::selection,
-#__tk_attack_tooltip ::selection {
+[data-tk-tooltip="cve"] ::selection,
+[data-tk-tooltip="attack"] ::selection {
   background: var(--tk-accent-soft) !important;
   color: var(--tk-ink) !important;
+}
+
+.__tk_tt_content {
+  max-height: calc(100vh - 18px) !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  scrollbar-color: var(--tk-line-2) transparent !important;
+}
+
+.__tk_tt_close {
+  appearance: none !important;
+  position: absolute !important;
+  top: 10px !important;
+  right: 11px !important;
+  z-index: 2 !important;
+  width: 28px !important;
+  height: 28px !important;
+  margin: 0 !important;
+  padding: 0 0 2px !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 1px solid transparent !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: var(--tk-muted) !important;
+  font: 400 20px/1 system-ui, sans-serif !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  transition: color 120ms ease, background 120ms ease, border-color 120ms ease !important;
+}
+
+.__tk_tt_close:hover {
+  color: var(--tk-ink) !important;
+  background: var(--tk-accent-soft) !important;
+  border-color: var(--tk-line) !important;
+}
+
+.__tk_tt_close:focus-visible {
+  outline: 2px solid var(--tk-accent) !important;
+  outline-offset: 2px !important;
+}
+
+[data-tk-tooltip="cve"] .__tk_tt_header {
+  padding-right: 52px !important;
+  cursor: grab !important;
+}
+
+[data-tk-tooltip="cve"].__tk_tt_dragging .__tk_tt_header {
+  cursor: grabbing !important;
+}
+
+[data-tk-tooltip="cve"].__tk_tt_pinned {
+  border-color: var(--tk-line-2) !important;
+  box-shadow: 0 2px 4px rgba(77, 62, 50, 0.08),
+    0 16px 40px rgba(77, 62, 50, 0.15) !important;
 }
 
 .__tk_tt_header {
@@ -307,6 +362,20 @@
   font-weight: 700 !important;
   letter-spacing: 0.16em !important;
   line-height: 1.2 !important;
+}
+
+[data-tk-tooltip="cve"] .__tk_tt_header::before {
+  content: 'THREATKEY  ·  ドラッグで固定' !important;
+}
+
+[data-tk-tooltip="cve"].__tk_tt_pinned .__tk_tt_header::before {
+  content: 'THREATKEY  ·  固定中' !important;
+}
+
+.__tk_tt_status {
+  padding: 22px 50px 22px 18px !important;
+  color: var(--tk-ink-2) !important;
+  font-size: 12.5px !important;
 }
 
 .__tk_cve_tt_title {
